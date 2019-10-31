@@ -72,6 +72,7 @@ class Elasticsearch extends EnvironmentAwareCommand {
     /**
      * Main entry point for starting elasticsearch
      */
+    // Main 启动elasticsearch的入口点
     public static void main(final String[] args) throws Exception {
         overrideDnsCachePolicyProperties();
         /*
@@ -79,22 +80,25 @@ class Elasticsearch extends EnvironmentAwareCommand {
          * presence of a security manager or lack thereof act as if there is a security manager present (e.g., DNS cache policy). This
          * forces such policies to take effect immediately.
          */
+        // 我们希望JVM认为已安装安全管理器，以便如果基于安全管理器存在或不存在的内部策略决策的行为就好像存在安全管理器（例如DNS缓存策略）一样。 这迫使此类政策立即生效。
         System.setSecurityManager(new SecurityManager() {
 
             @Override
             public void checkPermission(Permission perm) {
                 // grant all permissions so that we can later set the security manager to the one that we want
+                // 授予所有权限，以便我们以后可以将安全管理器设置为所需的那个
             }
 
         });
-        LogConfigurator.registerErrorListener();
-        final Elasticsearch elasticsearch = new Elasticsearch();
+        LogConfigurator.registerErrorListener(); //注册错误监听
+        final Elasticsearch elasticsearch = new Elasticsearch(); //创建Elasticsearch对象
         int status = main(args, elasticsearch, Terminal.DEFAULT);
         if (status != ExitCodes.OK) {
             exit(status);
         }
     }
 
+    // 覆盖dns 缓存策略属性
     private static void overrideDnsCachePolicyProperties() {
         for (final String property : new String[] {"networkaddress.cache.ttl", "networkaddress.cache.negative.ttl" }) {
             final String overrideProperty = "es." + property;
@@ -102,6 +106,7 @@ class Elasticsearch extends EnvironmentAwareCommand {
             if (overrideValue != null) {
                 try {
                     // round-trip the property to an integer and back to a string to ensure that it parses properly
+                    // 将属性round-trip为整数，然后返回字符串，以确保正确解析
                     Security.setProperty(property, Integer.toString(Integer.valueOf(overrideValue)));
                 } catch (final NumberFormatException e) {
                     throw new IllegalArgumentException(
@@ -112,9 +117,11 @@ class Elasticsearch extends EnvironmentAwareCommand {
     }
 
     static int main(final String[] args, final Elasticsearch elasticsearch, final Terminal terminal) throws Exception {
+
+        // 根据类的继承关系，此处调用Command::main/2
         return elasticsearch.main(args, terminal);
     }
-
+    // 在EnviromentAwareCommand::execute/2中调用
     @Override
     protected void execute(Terminal terminal, OptionSet options, Environment env) throws UserException {
         if (options.nonOptionArguments().isEmpty() == false) {
@@ -140,6 +147,7 @@ class Elasticsearch extends EnvironmentAwareCommand {
         final boolean quiet = options.has(quietOption);
 
         // a misconfigured java.io.tmpdir can cause hard-to-diagnose problems later, so reject it immediately
+        // 配置错误的java.io.tmpdir稍后可能导致难以诊断的问题，因此请立即将其拒绝
         try {
             env.validateTmpFile();
         } catch (IOException e) {
@@ -152,7 +160,7 @@ class Elasticsearch extends EnvironmentAwareCommand {
             throw new UserException(ExitCodes.CONFIG, e.getMessage());
         }
     }
-
+    //完成真正启动
     void init(final boolean daemonize, final Path pidFile, final boolean quiet, Environment initialEnv)
         throws NodeValidationException, UserException {
         try {
@@ -160,6 +168,7 @@ class Elasticsearch extends EnvironmentAwareCommand {
         } catch (BootstrapException | RuntimeException e) {
             // format exceptions to the console in a special way
             // to avoid 2MB stacktraces from guice, etc.
+            // 以一种特殊的方式格式化控制台异常，以避免来自guice等的2MB堆栈跟踪。
             throw new StartupException(e);
         }
     }
@@ -173,6 +182,7 @@ class Elasticsearch extends EnvironmentAwareCommand {
      * NOTE: If this method is renamed and/or moved, make sure to
      * update elasticsearch-service.bat!
      */
+    // 当Windows在服务上停止时作为服务运行时，Apache Commons procrun调用的必需方法。
     static void close(String[] args) throws IOException {
         Bootstrap.stop();
     }

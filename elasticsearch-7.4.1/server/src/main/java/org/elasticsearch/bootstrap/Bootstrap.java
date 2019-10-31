@@ -88,6 +88,7 @@ final class Bootstrap {
         }, "elasticsearch[keepAlive/" + Version.CURRENT + "]");
         keepAliveThread.setDaemon(false);
         // keep this thread alive (non daemon thread) until we shutdown
+        // 保持此线程处于活动状态（非守护线程），直到我们关闭
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
@@ -217,7 +218,7 @@ final class Bootstrap {
         } catch (IOException | NoSuchAlgorithmException e) {
             throw new BootstrapException(e);
         }
-
+          //创建node对象
         node = new Node(environment) {
             @Override
             protected void validateNodeBeforeAcceptingRequests(
@@ -291,6 +292,7 @@ final class Bootstrap {
     /**
      * This method is invoked by {@link Elasticsearch#main(String[])} to startup elasticsearch.
      */
+    // {@link Elasticsearch＃main（String []）}调用此方法以启动elasticsearch。
     static void init(
             final boolean foreground,
             final Path pidFile,
@@ -298,6 +300,7 @@ final class Bootstrap {
             final Environment initialEnv) throws BootstrapException, NodeValidationException, UserException {
         // force the class initializer for BootstrapInfo to run before
         // the security manager is installed
+        // 强制在安装安全管理器之前运行BootstrapInfo的类初始化程序
         BootstrapInfo.init();
 
         INSTANCE = new Bootstrap();
@@ -339,22 +342,25 @@ final class Bootstrap {
             }
 
             // fail if somebody replaced the lucene jars
+            // 检查lucene的版本
             checkLucene();
 
             // install the default uncaught exception handler; must be done before security is
             // initialized as we do not want to grant the runtime permission
             // setDefaultUncaughtExceptionHandler
+            // 安装默认的未捕获异常处理程序； 必须在初始化安全性之前完成，因为我们不想授予运行时权限setDefaultUncaughtExceptionHandler
             Thread.setDefaultUncaughtExceptionHandler(new ElasticsearchUncaughtExceptionHandler());
 
             INSTANCE.setup(true, environment);
 
             try {
                 // any secure settings must be read during node construction
+                // 在节点构建期间必须读取任何安全设置
                 IOUtils.close(keystore);
             } catch (IOException e) {
                 throw new BootstrapException(e);
             }
-
+            // 启动节点
             INSTANCE.start();
 
             if (closeStandardStreams) {

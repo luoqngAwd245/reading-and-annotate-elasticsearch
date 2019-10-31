@@ -322,6 +322,8 @@ public class Node implements Closeable {
 
             // create the environment based on the finalized (processed) view of the settings
             // this is just to makes sure that people get the same settings, no matter where they ask them from
+            // 根据设置的最终（已处理）视图创建环境
+            // 这只是为了确保人们获得相同的设置，无论他们从哪里询问
             this.environment = new Environment(settings, environment.configFile());
             Environment.assertEquivalent(environment, this.environment);
 
@@ -372,6 +374,8 @@ public class Node implements Closeable {
 
             ModulesBuilder modules = new ModulesBuilder();
             // plugin modules must be added here, before others or we can get crazy injection errors...
+            // plugin 模块必须在这添加并且在其他模块之前，否则我们会得到令人疯狂的注入错误
+            // 使用google的注入框架Guice的Injector进行注入与获取实例。
             for (Module pluginModule : pluginsService.createGuiceModules()) {
                 modules.add(pluginModule);
             }
@@ -671,25 +675,26 @@ public class Node implements Closeable {
         pluginLifecycleComponents.forEach(LifecycleComponent::start);
 
         injector.getInstance(MappingUpdatedAction.class).setClient(client);
-        injector.getInstance(IndicesService.class).start();
-        injector.getInstance(IndicesClusterStateService.class).start();
-        injector.getInstance(SnapshotsService.class).start();
-        injector.getInstance(SnapshotShardsService.class).start();
-        injector.getInstance(SearchService.class).start();
-        nodeService.getMonitorService().start();
+        injector.getInstance(IndicesService.class).start(); // 索引服务
+        injector.getInstance(IndicesClusterStateService.class).start(); //索引集群索引服务
+        injector.getInstance(SnapshotsService.class).start();  //快照服务
+        injector.getInstance(SnapshotShardsService.class).start(); //快照分片服务
+        injector.getInstance(SearchService.class).start();   //搜索服务
+        nodeService.getMonitorService().start();  //启动节点监控服务
 
-        final ClusterService clusterService = injector.getInstance(ClusterService.class);
+        final ClusterService clusterService = injector.getInstance(ClusterService.class);  //集群服务
 
         final NodeConnectionsService nodeConnectionsService = injector.getInstance(NodeConnectionsService.class);
         nodeConnectionsService.start();
-        clusterService.setNodeConnectionsService(nodeConnectionsService);
+        clusterService.setNodeConnectionsService(nodeConnectionsService);  //节点连接服务
 
-        injector.getInstance(ResourceWatcherService.class).start();
-        injector.getInstance(GatewayService.class).start();
-        Discovery discovery = injector.getInstance(Discovery.class);
+        injector.getInstance(ResourceWatcherService.class).start();  //资源监控服务
+        injector.getInstance(GatewayService.class).start();   //网关服务
+        Discovery discovery = injector.getInstance(Discovery.class);  //节点返现服务
         clusterService.getMasterService().setClusterStatePublisher(discovery::publish);
 
         // Start the transport service now so the publish address will be added to the local disco node in ClusterService
+        // 立即启动传输服务，以便将发布地址添加到ClusterService中的本地发现节点
         TransportService transportService = injector.getInstance(TransportService.class);
         transportService.getTaskManager().setTaskResultsService(injector.getInstance(TaskResultsService.class));
         transportService.start();
@@ -699,6 +704,7 @@ public class Node implements Closeable {
         final MetaData onDiskMetadata;
         // we load the global state here (the persistent part of the cluster state stored on disk) to
         // pass it to the bootstrap checks to allow plugins to enforce certain preconditions based on the recovered state.
+        // 我们在此处加载全局状态（存储在磁盘上的群集状态的持久部分），以将其传递给引导检查，以允许插件根据恢复的状态强制执行某些先决条件。
         if (DiscoveryNode.isMasterNode(settings()) || DiscoveryNode.isDataNode(settings())) {
             onDiskMetadata = injector.getInstance(GatewayMetaState.class).getMetaData();
         } else {
@@ -711,6 +717,7 @@ public class Node implements Closeable {
 
         clusterService.addStateApplier(transportService.getTaskManager());
         // start after transport service so the local disco is known
+        // 接送服务后开始，因此知道本地的发现服务
         discovery.start(); // start before cluster service so that it can set initial state on ClusterApplierService
         clusterService.start();
         assert clusterService.localNode().equals(localNodeFactory.getNode())

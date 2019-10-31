@@ -60,6 +60,7 @@ public abstract class EnvironmentAwareCommand extends Command {
         this.settingOption = parser.accepts("E", "Configure a setting").withRequiredArg().ofType(KeyValuePair.class);
     }
 
+    // 在Command::main/2中调用
     @Override
     protected void execute(Terminal terminal, OptionSet options) throws Exception {
         final Map<String, String> settings = new HashMap<>();

@@ -50,7 +50,7 @@ if (USE_ARTIFACTORY) {
     Closure configCache = {
         return {
             name "artifactory-gradle-release"
-            url "https://artifactory.elstc.co/artifactory/gradle-release"
+            url "http://maven.aliyun.com/nexus/content/groups/public/"
             credentials {
                 username artifactoryCredentials.get("username")
                 password artifactoryCredentials.get("token")
