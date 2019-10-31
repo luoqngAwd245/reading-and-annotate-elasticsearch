@@ -91,8 +91,8 @@ subprojects {
       repositories {
         maven {
           name = 'test'
-         // url = "${rootProject.buildDir}/local-test-repo"
-		 url = "http://maven.aliyun.com/nexus/content/groups/public/"
+          url = "${rootProject.buildDir}/local-test-repo"
+		 // url = "http://maven.aliyun.com/nexus/content/groups/public/"
         }
       }
     }
