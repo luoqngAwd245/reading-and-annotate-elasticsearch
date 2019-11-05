@@ -37,6 +37,9 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import java.io.IOException;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
+// /_cat/count?v
+// 快速查询当前整个集群或者指定索引的document的数量（不包括删除的但是还没有清理掉的document）
+// TransportSearchAction:doExecute
 
 public class RestCountAction extends AbstractCatAction {
     public RestCountAction(RestController restController) {

@@ -57,6 +57,11 @@ import java.util.Locale;
 import java.util.function.Function;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
+// 	/_cat/shards
+///_cat/shards/twitt*
+// 输出节点包含分片的详细信息（当前分片是primary shard还是 replica shard，doc的数量，硬盘上占用的字节已经该节点被分配在哪里等） 指定索引（模糊匹配）
+//这个命令可以用于查看分片的迁移情况和分片的状态
+//TransportIndicesStatsAction:shardOperation/2
 
 public class RestShardsAction extends AbstractCatAction {
 

@@ -105,8 +105,9 @@ public final class NetworkModule {
 
     /**
      * Creates a network module that custom networking classes can be plugged into.
-     * @param settings The settings for the node
-     * @param transportClient True if only transport classes should be allowed to be registered, false otherwise.
+     * @param settings The settings for the node 节点的设置
+     * @param transportClient True if only transport classes should be allowed to be registered, false otherwise. 如果仅应允许注册transport类，则为true，否则为false。
+     * 创建一个可以插拔的自定义网络类的网络模块
      */
     public NetworkModule(Settings settings, boolean transportClient, List<NetworkPlugin> plugins, ThreadPool threadPool,
                          BigArrays bigArrays,
@@ -118,9 +119,10 @@ public final class NetworkModule {
         this.settings = settings;
         this.transportClient = transportClient;
         for (NetworkPlugin plugin : plugins) {
-            Map<String, Supplier<HttpServerTransport>> httpTransportFactory = plugin.getHttpTransports(settings, threadPool, bigArrays,
-                pageCacheRecycler, circuitBreakerService, xContentRegistry, networkService, dispatcher);
             if (transportClient == false) {
+                //调用Netty4plugin::getHttpTransports
+                Map<String, Supplier<HttpServerTransport>> httpTransportFactory = plugin.getHttpTransports(settings, threadPool, bigArrays,
+                    pageCacheRecycler, circuitBreakerService, xContentRegistry, networkService, dispatcher);
                 for (Map.Entry<String, Supplier<HttpServerTransport>> entry : httpTransportFactory.entrySet()) {
                     registerHttpTransport(entry.getKey(), entry.getValue());
                 }

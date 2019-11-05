@@ -39,8 +39,10 @@ import org.elasticsearch.rest.action.RestActionListener;
 import org.elasticsearch.rest.action.RestResponseListener;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
-
-
+// /_cat/allocation?v
+// 查询每个节点上分配的分片（shard）的数量和每个分片（shard）所使用的硬盘容量
+// TransportNodesStatsAction:nodeOperation/2 ->NodeService:stats/13
+//
 public class RestAllocationAction extends AbstractCatAction {
 
     public RestAllocationAction(RestController controller) {

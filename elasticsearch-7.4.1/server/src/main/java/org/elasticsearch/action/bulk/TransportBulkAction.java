@@ -90,6 +90,8 @@ import static java.util.Collections.emptyMap;
  * Groups bulk request items by shard, optionally creating non-existent indices and
  * delegates to {@link TransportShardBulkAction} for shard-level bulk execution
  */
+// 通过shard对bulk请求条目进行分组，可选地为shard 水平得bulk执行创建不存在得索引或委托授权
+
 public class TransportBulkAction extends HandledTransportAction<BulkRequest, BulkResponse> {
 
     private final ThreadPool threadPool;
@@ -162,11 +164,14 @@ public class TransportBulkAction extends HandledTransportAction<BulkRequest, Bul
             IndexRequest indexRequest = getIndexWriteRequest(actionRequest);
             if (indexRequest != null) {
                 // get pipeline from request
+                // 从请求获取管道
                 String pipeline = indexRequest.getPipeline();
                 if (pipeline == null) {
                     // start to look for default pipeline via settings found in the index meta data
+                    // 通过在索引元数据中发现的设置开始查找默认管道
                     IndexMetaData indexMetaData = indicesMetaData.get(actionRequest.index());
                     // check the alias for the index request (this is how normal index requests are modeled)
+                    // 检查索引请求的别名（这是普通索引请求的建模方式）
                     if (indexMetaData == null && indexRequest.index() != null) {
                         AliasOrIndex indexOrAlias = metaData.getAliasAndIndexLookup().get(indexRequest.index());
                         if (indexOrAlias != null && indexOrAlias.isAlias()) {
@@ -184,6 +189,7 @@ public class TransportBulkAction extends HandledTransportAction<BulkRequest, Bul
                     }
                     if (indexMetaData != null) {
                         // Find the default pipeline if one is defined from and existing index.
+                        // 如果从现有索引中定义了默认管道，认为找到了默认管道。
                         String defaultPipeline = IndexSettings.DEFAULT_PIPELINE.get(indexMetaData.getSettings());
                         indexRequest.setPipeline(defaultPipeline);
                         if (IngestService.NOOP_PIPELINE_NAME.equals(defaultPipeline) == false) {
@@ -191,10 +197,12 @@ public class TransportBulkAction extends HandledTransportAction<BulkRequest, Bul
                         }
                     } else if (indexRequest.index() != null) {
                         // No index exists yet (and is valid request), so matching index templates to look for a default pipeline
+                        // 尚无索引（并且是有效请求），因此匹配索引模板以查找默认管道
                         List<IndexTemplateMetaData> templates = MetaDataIndexTemplateService.findTemplates(metaData, indexRequest.index());
                         assert (templates != null);
                         String defaultPipeline = IngestService.NOOP_PIPELINE_NAME;
                         // order of templates are highest order first, break if we find a default_pipeline
+                        // 模板的顺序是最高顺序，如果找到默认管道，则中断
                         for (IndexTemplateMetaData template : templates) {
                             final Settings settings = template.settings();
                             if (IndexSettings.DEFAULT_PIPELINE.exists(settings)) {
@@ -217,6 +225,8 @@ public class TransportBulkAction extends HandledTransportAction<BulkRequest, Bul
             // this method (doExecute) will be called again, but with the bulk requests updated from the ingest node processing but
             // also with IngestService.NOOP_PIPELINE_NAME on each request. This ensures that this on the second time through this method,
             // this path is never taken.
+            // 会再次调用此方法（doExecute），但会使用从预处理节点处理中更新的批量请求，而且还会对每个请求使用IngestService.NOOP_PIPELINE_NAME。
+            // 这样可以确保在第二次通过此方法时，永远不会采用此路径。
             try {
                 if (clusterService.localNode().isIngestNode()) {
                     processBulkIndexIngestRequest(task, bulkRequest, listener);
@@ -232,9 +242,12 @@ public class TransportBulkAction extends HandledTransportAction<BulkRequest, Bul
         if (needToCheck()) {
             // Attempt to create all the indices that we're going to need during the bulk before we start.
             // Step 1: collect all the indices in the request
+            // 在开始之前，尝试创建在批量操作中需要的所有索引。
+            // 步骤1：收集请求中的所有索引
             final Set<String> indices = bulkRequest.requests.stream()
                     // delete requests should not attempt to create the index (if the index does not
                     // exists), unless an external versioning is used
+                // 删除请求不应尝试创建索引（如果索引不存在），除非使用外部版本控制
                 .filter(request -> request.opType() != DocWriteRequest.OpType.DELETE
                         || request.versionType() == VersionType.EXTERNAL
                         || request.versionType() == VersionType.EXTERNAL_GTE)
@@ -242,6 +255,7 @@ public class TransportBulkAction extends HandledTransportAction<BulkRequest, Bul
                 .collect(Collectors.toSet());
             /* Step 2: filter that to indices that don't exist and we can create. At the same time build a map of indices we can't create
              * that we'll use when we try to run the requests. */
+            //  步骤2：将其过滤为不存在的索引，我们可以创建索引。 同时建立一个索引图，我们无法创建尝试运行请求时将使用的索引图。
             final Map<String, IndexNotFoundException> indicesThatCannotBeCreated = new HashMap<>();
             Set<String> autoCreateIndices = new HashSet<>();
             ClusterState state = clusterService.state();
@@ -258,6 +272,7 @@ public class TransportBulkAction extends HandledTransportAction<BulkRequest, Bul
                 }
             }
             // Step 3: create all the indices that are missing, if there are any missing. start the bulk after all the creates come back.
+            // 步骤3：创建所有缺少的索引（如果有的话）。 在所有创建的内容恢复之后，开始批量创建。
             if (autoCreateIndices.isEmpty()) {
                 executeBulk(task, bulkRequest, startTime, listener, responses, indicesThatCannotBeCreated);
             } else {
@@ -357,11 +372,13 @@ public class TransportBulkAction extends HandledTransportAction<BulkRequest, Bul
             if (handleBlockExceptions(clusterState)) {
                 return;
             }
+            // 具体索引
             final ConcreteIndices concreteIndices = new ConcreteIndices(clusterState, indexNameExpressionResolver);
             MetaData metaData = clusterState.metaData();
             for (int i = 0; i < bulkRequest.requests.size(); i++) {
                 DocWriteRequest<?> docWriteRequest = bulkRequest.requests.get(i);
                 //the request can only be null because we set it to null in the previous step, so it gets ignored
+                // 该请求只能为null，因为我们在上一步中将其设置为null，因此它将被忽略
                 if (docWriteRequest == null) {
                     continue;
                 }
@@ -453,6 +470,7 @@ public class TransportBulkAction extends HandledTransportAction<BulkRequest, Bul
                     @Override
                     public void onFailure(Exception e) {
                         // create failures for all relevant requests
+                        // 为所有相关请求创建失败
                         for (BulkItemRequest request : requests) {
                             final String indexName = concreteIndices.getConcreteIndex(request.index()).getName();
                             DocWriteRequest<?> docWriteRequest = request.request();

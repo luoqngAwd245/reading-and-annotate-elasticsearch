@@ -177,6 +177,7 @@ final class Bootstrap {
                 BootstrapSettings.CTRLHANDLER_SETTING.get(settings));
 
         // initialize probes before the security manager is installed
+        // 在安装安全管理器之前初始化探针
         initializeProbes();
 
         if (addShutdownHook) {

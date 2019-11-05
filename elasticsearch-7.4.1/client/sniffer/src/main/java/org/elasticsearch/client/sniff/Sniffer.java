@@ -48,6 +48,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * It is possible to perform sniffing on failure by creating a {@link SniffOnFailureListener} and providing it as an argument to
  * {@link RestClientBuilder#setFailureListener(RestClient.FailureListener)}. The Sniffer implementation needs to be lazily set to the
  * previously created SniffOnFailureListener through {@link SniffOnFailureListener#setSniffer(Sniffer)}.
+ * 类负责从某些源中嗅探节点（默认为elasticsearch本身）并将其设置为{@link RestClient}的实例。必须通过{@link SnifferBuilder}创建，它可以设置所有不同的选项或依赖默认值。
+ * 后台任务通过{@link odesSniffer}获取节点，并将其设置为{@link RestClient}实例。 通过创建{@link SniffOnFailureListener}并将其作为参数提供给
+ * {@link RestClientBuilder＃setFailureListener（RestClient.FailureListener）}，可以对失败执行嗅探。
+ * 需要通过{@link SniffOnFailureListener＃setSniffer（Sniffer）}将Sniffer实现延迟设置为先前创建的SniffOnFailureListener。
  */
 public class Sniffer implements Closeable {
 

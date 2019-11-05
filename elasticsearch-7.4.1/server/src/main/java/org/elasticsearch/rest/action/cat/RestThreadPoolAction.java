@@ -48,7 +48,9 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
-
+// /_cat/thread_pool
+// 输出每个节点集群范围的线程池统计信息，默认情况下返回正在活动，队列和被拒绝的统计信息
+// TransportClusterStateAction:masterOperation/3
 public class RestThreadPoolAction extends AbstractCatAction {
 
     public RestThreadPoolAction(RestController controller) {

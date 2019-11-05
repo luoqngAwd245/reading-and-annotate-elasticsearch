@@ -92,6 +92,15 @@ import static java.util.Collections.singletonList;
  * <p>
  * Requests can be traced by enabling trace logging for "tracer". The trace logger outputs requests and responses in curl format.
  */
+//    通过http协议连接断到elsaticsearch集群的客户端
+//     必须用{@link RestClientBuilder}创建，它允许设置所有不同的选项或仅依赖默认值。需要在创建时提供作为群集一部分的主机，但以后也可以通过调用{@link #setNodes（Collection）}
+//      来替换它们。
+//    方法{@link #performRequest（Request）}允许向集群发送请求。 发送请求时，将以循环方式从提供的请求中选择主机。 将失败的主机标记为已死，并在一定时间（最少1分钟，最多30分钟）后重试，具体取决于它们先前失败的次数（失败次数越多，重试它们的时间就越晚）。 如果发生故障，将重试所有活动节点（或应重试的死节点），直到一个响应或它们都不响应为止，在这种情况下，将抛出{@link IOException}。
+//
+//    请求可以是同步的也可以是异步的。 异步变体都以{@code Async}结尾。
+//
+//    可以通过为“跟踪器”启用跟踪日志记录来跟踪请求。 跟踪记录器以curl格式输出请求和响应。
+
 public class RestClient implements Closeable {
 
     private static final Log logger = LogFactory.getLog(RestClient.class);
@@ -99,6 +108,7 @@ public class RestClient implements Closeable {
     private final CloseableHttpAsyncClient client;
     // We don't rely on default headers supported by HttpAsyncClient as those cannot be replaced.
     // These are package private for tests.
+    // 我们不依赖HttpAsyncClient支持的默认标头，因为这些标头无法替换。这些是测试专用的软件包。
     final List<Header> defaultHeaders;
     private final String pathPrefix;
     private final AtomicInteger lastNodeIndex = new AtomicInteger(0);

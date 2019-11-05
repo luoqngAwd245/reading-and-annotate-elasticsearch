@@ -46,7 +46,8 @@ import java.util.function.Supplier;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 import static org.elasticsearch.rest.action.admin.cluster.RestListTasksAction.generateListTasksRequest;
-
+// 遍历task
+// TransportListTasksAction:taskOperation/3
 public class RestTasksAction extends AbstractCatAction {
     private final Supplier<DiscoveryNodes> nodesInCluster;
 

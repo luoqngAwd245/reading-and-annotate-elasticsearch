@@ -48,6 +48,7 @@ import java.util.Map;
  * Transport action for shard recovery operation. This transport action does not actually
  * perform shard recovery, it only reports on recoveries (both active and complete).
  */
+// 分片恢复操作的传输操作。 此传输操作实际上并不执行分片恢复，它仅报告恢复（活动的和完整的）。
 public class TransportRecoveryAction extends TransportBroadcastByNodeAction<RecoveryRequest, RecoveryResponse, RecoveryState> {
 
     private final IndicesService indicesService;

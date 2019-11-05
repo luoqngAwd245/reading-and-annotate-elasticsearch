@@ -34,6 +34,9 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
 /**
  * Cat API class to display information about snapshot repositories
  */
+// /_cat/repositories?v
+// 输出集群中注册快照存储库
+// TransportGetRepositoriesAction:masterOperation/3
 public class RestRepositoriesAction extends AbstractCatAction {
 
     public RestRepositoriesAction(RestController controller) {

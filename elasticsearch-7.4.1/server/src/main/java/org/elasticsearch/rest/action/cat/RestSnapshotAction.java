@@ -42,6 +42,9 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
 /**
  * Cat API class to display information about snapshots
  */
+// /_cat/snapshots/repo1?v
+// 输出属于指定仓库的快照信息（snapshots）每个快照信息包括了它被启动和被停止的信息。
+// TransportGetSnapshotsAction:masterOperation/3
 public class RestSnapshotAction extends AbstractCatAction {
 
     public RestSnapshotAction(RestController controller) {

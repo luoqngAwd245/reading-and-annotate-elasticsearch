@@ -31,7 +31,9 @@ import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.action.RestResponseListener;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
-
+// /_cat/master?v
+// 仅用于显示master的节点ID，绑定IP地址，节点名称
+// TransportIndicesStatsAction:newResponse/7
 public class RestMasterAction extends AbstractCatAction {
 
     public RestMasterAction(RestController controller) {

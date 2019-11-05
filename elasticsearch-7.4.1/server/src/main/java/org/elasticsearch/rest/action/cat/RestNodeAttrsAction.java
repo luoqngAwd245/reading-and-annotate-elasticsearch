@@ -38,7 +38,9 @@ import org.elasticsearch.rest.action.RestResponseListener;
 import java.util.Map;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
-
+// /_cat/nodeattrs?v
+// 输出显示自定义节点属性
+// TransportNodesInfoAction:nodeOperation/1->NodeInfo:info/10
 public class RestNodeAttrsAction extends AbstractCatAction {
 
     public RestNodeAttrsAction(RestController controller) {

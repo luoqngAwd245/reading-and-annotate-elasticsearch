@@ -47,6 +47,12 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
  * in a string format, designed to be used at the command line. An Index can
  * be specified to limit output to a particular index or indices.
  */
+// RestRecoveryAction以字符串格式提供有关副本恢复状态的信息，该格式旨在用于命令行。 可以指定一个索引以将输出限制为一个或多个特定索引。
+// /_cat/recovery?v
+// 提供一个视图关于索引分片 正在恢复或者已经完成恢复的相关信息，恢复事件操作可以发生在集群中一个索引分片从一个节点移动到另外一个节点上。可以发生在快照恢复期间，
+// 一个replication层级的变化，节点失败，或者节点启动的时候。节点启动的恢复操作也叫本地存储恢复（当一个节点启动的时候分片从硬盘上被加载到）
+
+ // TransportRecoveryAction:newResponse/7
 public class RestCatRecoveryAction extends AbstractCatAction {
 
     public RestCatRecoveryAction(RestController restController) {

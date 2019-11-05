@@ -104,6 +104,7 @@ public abstract class DiscoveryNodeRole {
     /**
      * Represents the role for a data node.
      */
+    // 数据节点
     public static final DiscoveryNodeRole DATA_ROLE = new DiscoveryNodeRole("data", "d") {
 
         @Override
@@ -116,6 +117,7 @@ public abstract class DiscoveryNodeRole {
     /**
      * Represents the role for an ingest node.
      */
+    // 预处理节点
     public static final DiscoveryNodeRole INGEST_ROLE = new DiscoveryNodeRole("ingest", "i") {
 
         @Override
@@ -128,6 +130,7 @@ public abstract class DiscoveryNodeRole {
     /**
      * Represents the role for a master-eligible node.
      */
+    // 主节点（不是真正主节点, 可以被选举为主节点）
     public static final DiscoveryNodeRole MASTER_ROLE = new DiscoveryNodeRole("master", "m") {
 
         @Override

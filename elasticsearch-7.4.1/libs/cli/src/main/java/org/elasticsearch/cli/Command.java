@@ -106,6 +106,7 @@ public abstract class Command implements Closeable {
     /**
      * Executes the command, but all errors are thrown.
      */
+    // 执行命令，所有错误都会被抛出
     void mainWithoutErrorHandling(String[] args, Terminal terminal) throws Exception {
         final OptionSet options = parser.parse(args);
 

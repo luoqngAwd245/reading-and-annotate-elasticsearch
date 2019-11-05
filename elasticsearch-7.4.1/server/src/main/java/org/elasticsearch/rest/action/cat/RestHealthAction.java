@@ -32,6 +32,19 @@ import java.util.Locale;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 
+// /_cat/health?v
+///_cat/health?v&ts=false
+// 查询当前集群的健康信息（同/_cluster/health）
+//ts用于控制是否显示时间戳(timestamp)
+//1、常见的用途是用于监测节点之间的健康值
+//2、通过循环使用该命令，用于追踪大集群恢复的时间
+///_cat/health; sleep 120;
+//done green：每个索引的primary shard和replica shard都是active状态的。
+//yellow：每个索引的primary shard都是active状态的，但是部分replica shard不是active状态，处于不可用的状态
+//red：不是所有索引的primary shard都是active状态的，部分索引有数据丢失了
+// TransportClusterHealthAction:masterOperation/4
+
+
 public class RestHealthAction extends AbstractCatAction {
 
     public RestHealthAction(RestController controller) {

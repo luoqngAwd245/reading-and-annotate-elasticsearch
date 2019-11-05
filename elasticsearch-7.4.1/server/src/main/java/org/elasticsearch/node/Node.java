@@ -266,6 +266,7 @@ public class Node implements Closeable {
     protected Node(
             final Environment environment, Collection<Class<? extends Plugin>> classpathPlugins, boolean forbidPrivateIndexSettings) {
         logger = LogManager.getLogger(Node.class);
+        // 注册发生错误时需要释放的所有内容
         final List<Closeable> resourcesToClose = new ArrayList<>(); // register everything we need to release in the case of an error
         boolean success = false;
         try {
@@ -332,6 +333,7 @@ public class Node implements Closeable {
             final ThreadPool threadPool = new ThreadPool(settings, executorBuilders.toArray(new ExecutorBuilder[0]));
             resourcesToClose.add(() -> ThreadPool.terminate(threadPool, 10, TimeUnit.SECONDS));
             // adds the context to the DeprecationLogger so that it does not need to be injected everywhere
+            // 将上下文添加到DeprecationLogger中，以便不需要在任何地方注入
             DeprecationLogger.setThreadContext(threadPool.getThreadContext());
             resourcesToClose.add(() -> DeprecationLogger.removeThreadContext(threadPool.getThreadContext()));
 
@@ -346,6 +348,7 @@ public class Node implements Closeable {
             AnalysisModule analysisModule = new AnalysisModule(this.environment, pluginsService.filterPlugins(AnalysisPlugin.class));
             // this is as early as we can validate settings at this point. we already pass them to ScriptModule as well as ThreadPool
             // so we might be late here already
+            // 这是我们最早可以验证设置的时间。 我们已经将它们传递给ScriptModule和ThreadPool，所以我们可能已经晚了
 
             final Set<SettingUpgrader<?>> settingsUpgraders = pluginsService.filterPlugins(Plugin.class)
                     .stream()
@@ -415,6 +418,7 @@ public class Node implements Closeable {
             final MetaStateService metaStateService = new MetaStateService(nodeEnvironment, xContentRegistry);
 
             // collect engine factory providers from server and from plugins
+            // 从服务器和插件收集引擎工厂提供程序
             final Collection<EnginePlugin> enginePlugins = pluginsService.filterPlugins(EnginePlugin.class);
             final Collection<Function<IndexSettings, Optional<EngineFactory>>> engineFactoryProviders =
                     Stream.concat(
@@ -461,7 +465,7 @@ public class Node implements Closeable {
                 threadPool, pluginsService.filterPlugins(ActionPlugin.class), client, circuitBreakerService, usageService);
             modules.add(actionModule);
 
-            final RestController restController = actionModule.getRestController();
+            final RestController restController = actionModule.getRestController();  // 网络模块
             final NetworkModule networkModule = new NetworkModule(settings, false, pluginsService.filterPlugins(NetworkPlugin.class),
                 threadPool, bigArrays, pageCacheRecycler, circuitBreakerService, namedWriteableRegistry, xContentRegistry,
                 networkService, restController);
@@ -676,7 +680,7 @@ public class Node implements Closeable {
 
         injector.getInstance(MappingUpdatedAction.class).setClient(client);
         injector.getInstance(IndicesService.class).start(); // 索引服务
-        injector.getInstance(IndicesClusterStateService.class).start(); //索引集群索引服务
+        injector.getInstance(IndicesClusterStateService.class).start(); //索引集群状态服务
         injector.getInstance(SnapshotsService.class).start();  //快照服务
         injector.getInstance(SnapshotShardsService.class).start(); //快照分片服务
         injector.getInstance(SearchService.class).start();   //搜索服务
@@ -690,7 +694,7 @@ public class Node implements Closeable {
 
         injector.getInstance(ResourceWatcherService.class).start();  //资源监控服务
         injector.getInstance(GatewayService.class).start();   //网关服务
-        Discovery discovery = injector.getInstance(Discovery.class);  //节点返现服务
+        Discovery discovery = injector.getInstance(Discovery.class);  //节点发现服务
         clusterService.getMasterService().setClusterStatePublisher(discovery::publish);
 
         // Start the transport service now so the publish address will be added to the local disco node in ClusterService
@@ -717,7 +721,7 @@ public class Node implements Closeable {
 
         clusterService.addStateApplier(transportService.getTaskManager());
         // start after transport service so the local disco is known
-        // 接送服务后开始，因此知道本地的发现服务
+        // 传输服务后开始，因此知道本地的发现服务
         discovery.start(); // start before cluster service so that it can set initial state on ClusterApplierService
         clusterService.start();
         assert clusterService.localNode().equals(localNodeFactory.getNode())

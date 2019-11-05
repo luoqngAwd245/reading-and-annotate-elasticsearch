@@ -98,10 +98,12 @@ public abstract class AbstractHttpServerTransport extends AbstractLifecycleCompo
         this.corsConfig = CorsHandler.fromSettings(settings);
 
         // we can't make the network.bind_host a fallback since we already fall back to http.host hence the extra conditional here
+        // 我们无法将network.bind_host设为后备，因为我们已经退回到http.host了，因此这里有额外的条件
         List<String> httpBindHost = SETTING_HTTP_BIND_HOST.get(settings);
         this.bindHosts = (httpBindHost.isEmpty() ? NetworkService.GLOBAL_NETWORK_BIND_HOST_SETTING.get(settings) : httpBindHost)
             .toArray(Strings.EMPTY_ARRAY);
         // we can't make the network.publish_host a fallback since we already fall back to http.host hence the extra conditional here
+        // 我们无法将network.publish_host设为后备，因为我们已经退回到http.host了，因此这里的额外条件
         List<String> httpPublishHost = SETTING_HTTP_PUBLISH_HOST.get(settings);
         this.publishHosts = (httpPublishHost.isEmpty() ? NetworkService.GLOBAL_NETWORK_PUBLISH_HOST_SETTING.get(settings) : httpPublishHost)
             .toArray(Strings.EMPTY_ARRAY);

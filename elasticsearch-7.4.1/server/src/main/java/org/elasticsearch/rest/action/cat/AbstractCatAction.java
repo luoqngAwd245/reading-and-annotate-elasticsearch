@@ -34,6 +34,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+//cat API 基类
+// cat API是esAPI中比较简单的一种，es中的API按照大类分为下面几种：
+//
+//文档API(Document APIs): 提供对文档的增删改查操作
+//搜索API(Search APIs): 提供对文档进行某个字段的查询
+//索引API(Indices APIs): 提供对索引进行操作
+//查看API(cat APIs): 按照更直观的形式返回数据，更适用于控制台请求展示
+//集群API(Cluster APIs): 对集群进行查看和操作的API
+//
+
+
 import static org.elasticsearch.rest.action.cat.RestTable.buildHelpWidths;
 import static org.elasticsearch.rest.action.cat.RestTable.pad;
 

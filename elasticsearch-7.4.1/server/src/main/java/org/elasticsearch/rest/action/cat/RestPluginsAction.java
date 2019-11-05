@@ -36,7 +36,9 @@ import org.elasticsearch.rest.action.RestActionListener;
 import org.elasticsearch.rest.action.RestResponseListener;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
-
+// /_cat/plugins?v
+// 输出每个节点正在运行的插件信息
+// TransportClusterStateAction:masterOperation/3
 public class RestPluginsAction extends AbstractCatAction {
 
     public RestPluginsAction(RestController controller) {

@@ -33,6 +33,12 @@ import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.action.RestResponseListener;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
+///_cat/templates?v
+///_cat/templates/templateName1
+///_cat/templates/template*
+// 输出当前正在存在的模板信息
+// 输出指定模板的信息
+// TransportClusterStateAction:masterOperation/3
 
 public class RestTemplatesAction extends AbstractCatAction {
 

@@ -41,7 +41,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
-
+// /_cat/segments?v
+///_cat/segments/index1,index1
+// 输出索引分片中关于segment的低层级的信息（包括索引名称，分片数量，doc数量等），提供的信息类似于_segments端点查询指定索引（index1,index2）的segments信息
+// TransportClusterStateAction:masterOperation/3
 public class RestSegmentsAction extends AbstractCatAction {
 
     public RestSegmentsAction(RestController controller) {

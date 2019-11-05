@@ -30,6 +30,9 @@ import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.action.RestResponseListener;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
+// /_cat/pending_tasks?v
+// 输出集群中正在执行的任务（集群层级的变化，比如：创建索引，更新mapping,分配或者fail shard）同 /_cluster/pending_tasks
+// TransportPendingClusterTasksAction:masterOperation/3
 
 public class RestPendingClusterTasksAction extends AbstractCatAction {
 

@@ -36,6 +36,14 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
 /**
  * Cat API class to display information about the size of fielddata fields per node
  */
+
+// Cat API类，用于显示有关每个节点的字段数据字段大小的信息
+///_cat/fielddata?v
+///_cat/fielddata?v&fields=XXX
+///_cat/fielddata/field1,field2,field3?v
+// TransportNodesStatsAction:nodeOperation/2 -> NodeService:stats/13
+
+
 public class RestFielddataAction extends AbstractCatAction {
 
     public RestFielddataAction(RestController controller) {

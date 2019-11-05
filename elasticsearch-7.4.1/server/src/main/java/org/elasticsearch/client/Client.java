@@ -83,6 +83,12 @@ import java.util.Map;
  * @see org.elasticsearch.node.Node#client()
  * @see org.elasticsearch.client.transport.TransportClient
  */
+//     客户端提供顶层接口，用户对集群执行操作/动作
+//     所有操作自然地使用异步模式. 每个动作/操作都有两种形式，第一种仅返回{@link org.elasticsearch.action.ActionFuture}，而第二种则接受
+//    {@link org.elasticsearch.action.ActionListener}。
+//    可以从启动的{@link org.elasticsearch.node.Node}检索客户端，也可以使用{@link org.elasticsearch.client.transport.TransportClient}
+//    远程连接到一个或多个节点。
+
 public interface Client extends ElasticsearchClient, Releasable {
 
     Setting<String> CLIENT_TYPE_SETTING_S = new Setting<>("client.type", "node", (s) -> {

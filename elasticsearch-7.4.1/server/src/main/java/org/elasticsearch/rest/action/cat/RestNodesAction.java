@@ -66,6 +66,13 @@ import java.util.stream.Collectors;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 
+// /_cat/nodes?v
+///_cat/nodes?v&full_id=false
+// 输出当前集群的拓扑结构（包括当前节点所在的地方和整个集群的相关信息等）full_id(true/false)用于是否格式化ID字段以显示ID的全长或者简写
+// 输出显示自定义节点属性
+// TransportNodesInfoAction:nodeOperation/1->NodeInfo:info/10
+
+
 public class RestNodesAction extends AbstractCatAction {
 
     public RestNodesAction(RestController controller) {

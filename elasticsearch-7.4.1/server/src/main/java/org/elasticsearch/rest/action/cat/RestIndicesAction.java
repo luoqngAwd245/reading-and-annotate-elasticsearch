@@ -64,6 +64,11 @@ import java.util.stream.StreamSupport;
 
 import static org.elasticsearch.action.support.master.MasterNodeRequest.DEFAULT_MASTER_NODE_TIMEOUT;
 import static org.elasticsearch.rest.RestRequest.Method.GET;
+// /_cat/indices/index1?v
+// 查询指定索引index1的相关信息（组成一个索引（index）的shard数量，document的数量，删除的doc数量，主存大小和所有索引的总存储大小（包括replicas）
+//    其中document的数量和删除document的数量是lucense层级的，包括所有隐藏的document数量<br />
+//    要获取Elasticsearch层级的精确的document数量可以使用 cat count或者Count API
+// TransportIndicesStatsAction:newResponse/7
 
 public class RestIndicesAction extends AbstractCatAction {
 

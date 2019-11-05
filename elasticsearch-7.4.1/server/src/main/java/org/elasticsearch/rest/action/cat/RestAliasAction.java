@@ -34,6 +34,11 @@ import java.util.List;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 
+// GET  /_cat/XXX/aliases?v
+// GET  /_cat/aliases/alias1,aliase2,aliase3
+// 查询当前配置索引，过滤器，路由的别名，指定一至多个别名，则以逗号隔开
+// TransportGetAliasesAction:masterOperation/3-> MetaData:findAliases/2
+
 public class RestAliasAction extends AbstractCatAction {
 
     public RestAliasAction(RestController controller) {
