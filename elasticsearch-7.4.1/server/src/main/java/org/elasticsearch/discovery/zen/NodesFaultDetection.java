@@ -284,11 +284,13 @@ public class NodesFaultDetection extends FaultDetection {
         public void messageReceived(PingRequest request, TransportChannel channel, Task task) throws Exception {
             // if we are not the node we are supposed to be pinged, send an exception
             // this can happen when a kill -9 is sent, and another node is started using the same port
+            // 如果我们不是应该被ping通的节点，请发送异常。 发送kill -9并使用同一端口启动另一个节点时，可能会发生这种情况
             if (!localNode.equals(request.targetNode())) {
                 throw new IllegalStateException("Got pinged as node " + request.targetNode() + "], but I am node " + localNode );
             }
 
             // PingRequest will have clusterName set to null if it came from a node of version <1.4.0
+            // 如果PingRequest来自版本<1.4.0的节点，它将clusterName设置为null。
             if (request.clusterName != null && !request.clusterName.equals(clusterName)) {
                 // Don't introduce new exception for bwc reasons
                 throw new IllegalStateException("Got pinged with cluster name [" + request.clusterName + "], but I'm part of cluster ["

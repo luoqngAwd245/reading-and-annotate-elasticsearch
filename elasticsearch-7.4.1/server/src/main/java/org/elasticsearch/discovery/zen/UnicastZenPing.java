@@ -196,6 +196,7 @@ public class UnicastZenPing implements ZenPing {
     /**
      * a variant of {@link #ping(Consumer, TimeValue)}, but allows separating the scheduling duration
      * from the duration used for request level time outs. This is useful for testing
+     * {@link #ping（Consumer，TimeValue）}的变体，但允许将调度持续时间与用于请求级别超时的持续时间分开。 这对于测试很有用
      */
     protected void ping(final Consumer<PingCollection> resultsConsumer,
                         final TimeValue scheduleDuration,
@@ -204,6 +205,7 @@ public class UnicastZenPing implements ZenPing {
         seedAddresses.addAll(hostsProvider.getSeedAddresses(createHostsResolver()));
         final DiscoveryNodes nodes = contextProvider.clusterState().nodes();
         // add all possible master nodes that were active in the last known cluster configuration
+        // 添加在最后一个已知集群配置中处于活动状态的所有可能的主节点
         for (ObjectCursor<DiscoveryNode> masterNode : nodes.getMasterNodes().values()) {
             seedAddresses.add(masterNode.value.getAddress());
         }
@@ -227,7 +229,7 @@ public class UnicastZenPing implements ZenPing {
                 sendPings(requestDuration, pingingRound);
             }
         };
-        threadPool.generic().execute(pingSender);
+        threadPool.generic().execute(pingSender); //发送ping消息
         threadPool.schedule(pingSender, TimeValue.timeValueMillis(scheduleDuration.millis() / 3), ThreadPool.Names.GENERIC);
         threadPool.schedule(pingSender, TimeValue.timeValueMillis(scheduleDuration.millis() / 3 * 2), ThreadPool.Names.GENERIC);
         threadPool.schedule(new AbstractRunnable() {
@@ -494,7 +496,7 @@ public class UnicastZenPing implements ZenPing {
     }
 
     class UnicastPingRequestHandler implements TransportRequestHandler<UnicastPingRequest> {
-
+        // 处理ping消息
         @Override
         public void messageReceived(UnicastPingRequest request, TransportChannel channel, Task task) throws Exception {
             if (closed) {

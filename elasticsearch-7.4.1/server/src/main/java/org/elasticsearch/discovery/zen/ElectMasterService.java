@@ -138,6 +138,7 @@ public class ElectMasterService {
      * Elects a new master out of the possible nodes, returning it. Returns {@code null}
      * if no master has been elected.
      */
+    // 从可能的节点中选出一个新的主服务器，然后将其返回。 如果没有选择主节点，则返回{@code null}。
     public MasterCandidate electMaster(Collection<MasterCandidate> candidates) {
         assert hasEnoughCandidates(candidates);
         List<MasterCandidate> sortedCandidates = new ArrayList<>(candidates);
@@ -146,6 +147,7 @@ public class ElectMasterService {
     }
 
     /** selects the best active master to join, where multiple are discovered */
+    // 从发现的多个节点中，选择要加入的最佳活动主节点
     public DiscoveryNode tieBreakActiveMasters(Collection<DiscoveryNode> activeMasters) {
         return activeMasters.stream().min(ElectMasterService::compareNodes).get();
     }

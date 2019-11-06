@@ -82,6 +82,7 @@ public class NodeRemovalClusterStateTaskExecutor implements ClusterStateTaskExec
 
         if (!removed) {
             // no nodes to remove, keep the current cluster state
+            // 没有节点被移除，保持现在集群的状态
             return ClusterTasksResult.<Task>builder().successes(tasks).build(currentState);
         }
 

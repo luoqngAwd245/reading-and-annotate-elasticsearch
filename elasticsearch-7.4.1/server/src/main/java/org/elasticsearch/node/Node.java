@@ -516,11 +516,12 @@ public class Node implements Closeable {
             final DiskThresholdMonitor diskThresholdMonitor = new DiskThresholdMonitor(settings, clusterService::state,
                 clusterService.getClusterSettings(), client, threadPool::relativeTimeInMillis, rerouteService);
             clusterInfoService.addListener(diskThresholdMonitor::onNewInfo);
-
+            // 发现模块
             final DiscoveryModule discoveryModule = new DiscoveryModule(settings, threadPool, transportService, namedWriteableRegistry,
                 networkService, clusterService.getMasterService(), clusterService.getClusterApplierService(),
                 clusterService.getClusterSettings(), pluginsService.filterPlugins(DiscoveryPlugin.class),
                 clusterModule.getAllocationService(), environment.configFile(), gatewayMetaState, rerouteService);
+
             this.nodeService = new NodeService(settings, threadPool, monitorService, discoveryModule.getDiscovery(),
                 transportService, indicesService, pluginsService, circuitBreakerService, scriptModule.getScriptService(),
                 httpServerTransport, ingestService, clusterService, settingsModule.getSettingsFilter(), responseCollectorService,
@@ -722,6 +723,7 @@ public class Node implements Closeable {
         clusterService.addStateApplier(transportService.getTaskManager());
         // start after transport service so the local disco is known
         // 传输服务后开始，因此知道本地的发现服务
+        // 在群集服务之前启动，以便可以在ClusterApplierService上设置初始状态
         discovery.start(); // start before cluster service so that it can set initial state on ClusterApplierService
         clusterService.start();
         assert clusterService.localNode().equals(localNodeFactory.getNode())

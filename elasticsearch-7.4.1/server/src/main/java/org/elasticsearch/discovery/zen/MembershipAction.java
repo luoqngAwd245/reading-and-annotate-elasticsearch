@@ -71,12 +71,14 @@ public class MembershipAction {
         this.transportService = transportService;
         this.listener = listener;
 
-
+        // 注册join请求处理handler类
         transportService.registerRequestHandler(DISCOVERY_JOIN_ACTION_NAME,
             ThreadPool.Names.GENERIC, JoinRequest::new, new JoinRequestRequestHandler());
+        // 注册验证jion请求处理handler类
         transportService.registerRequestHandler(DISCOVERY_JOIN_VALIDATE_ACTION_NAME,
             ThreadPool.Names.GENERIC, ValidateJoinRequest::new,
             new ValidateJoinRequestRequestHandler(transportService::getLocalNode, joinValidators));
+        // 注册leave请求处理handler类
         transportService.registerRequestHandler(DISCOVERY_LEAVE_ACTION_NAME,
             ThreadPool.Names.GENERIC, LeaveRequest::new, new LeaveRequestRequestHandler());
     }
@@ -133,6 +135,7 @@ public class MembershipAction {
 
         @Override
         public void messageReceived(final JoinRequest request, final TransportChannel channel, Task task) throws Exception {
+            // 调用ZenDisCovery.MembershipListener:onJoin/2
             listener.onJoin(request.getNode(), new JoinCallback() {
                 @Override
                 public void onSuccess() {

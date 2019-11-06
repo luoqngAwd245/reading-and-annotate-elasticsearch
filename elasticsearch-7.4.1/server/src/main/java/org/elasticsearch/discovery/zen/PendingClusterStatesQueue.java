@@ -50,6 +50,12 @@ import java.util.Objects;
  * <p>
  * The class is fully thread safe and can be used concurrently.
  */
+//一个队列，其中包含来自主服务器的所有“运行中”传入群集状态。 主服务器提交集群状态后，即可通过{@link #getNextClusterStateToProcess（）}使其可用。
+//该类还负责为处理和故障批处理群集状态。
+//
+// 队列由{@link #maxQueueSize}绑定。 当队列达到最大容量并插入新的群集状态时，最旧的群集状态将被删除。 这是安全的，因为：
+
+
 public class PendingClusterStatesQueue {
 
     interface StateProcessedListener {

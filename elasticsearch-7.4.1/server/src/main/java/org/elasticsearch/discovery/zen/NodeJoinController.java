@@ -106,6 +106,8 @@ public class NodeJoinController {
         try {
             // check what we have so far..
             // capture the context we add the callback to make sure we fail our own
+            // 检查我们到目前为止。
+            // 捕获上下文，我们添加回调以确保我们自己的失败
             synchronized (this) {
                 assert electionContext != null : "waitToBeElectedAsMaster is called we are not accumulating joins";
                 myElectionContext = electionContext;
@@ -185,6 +187,7 @@ public class NodeJoinController {
      * checks if there is an on going request to become master and if it has enough pending joins. If so, the node will
      * become master via a ClusterState update task.
      */
+    // 检查是否有正在进行的成为主节点的请求，以及是否有足够的挂起连接。 如果是这样，则该节点将通过ClusterState更新任务成为主节点。
     private synchronized void checkPendingJoinsAndElectIfNeeded() {
         assert electionContext != null : "election check requested but no active context";
         final int pendingMasterJoins = electionContext.getPendingMasterJoinsCount();

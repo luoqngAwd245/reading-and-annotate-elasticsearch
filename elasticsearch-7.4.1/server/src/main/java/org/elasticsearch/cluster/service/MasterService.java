@@ -781,6 +781,7 @@ public class MasterService extends AbstractLifecycleComponent {
      * @param <T>      the type of the cluster state update task state
      *
      */
+    // 调用NodeRemovalClusterStateTaskExecutor:execute/2
     public <T> void submitStateUpdateTasks(final String source,
                                            final Map<T, ClusterStateTaskListener> tasks, final ClusterStateTaskConfig config,
                                            final ClusterStateTaskExecutor<T> executor) {
