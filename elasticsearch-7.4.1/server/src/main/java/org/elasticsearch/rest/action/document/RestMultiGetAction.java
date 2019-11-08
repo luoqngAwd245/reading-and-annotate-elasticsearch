@@ -36,7 +36,8 @@ import java.io.IOException;
 
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 import static org.elasticsearch.rest.RestRequest.Method.POST;
-
+// MGet 命令必须指定三元组: index\type\id, 根据文档id从正排索引中获取内容
+// TransportMultiGetAction:doExecute/3->TransportMultiGetAction:executeShardAction/3->TransportShardMultiGetAction:asyncShardOperation
 public class RestMultiGetAction extends BaseRestHandler {
     private static final DeprecationLogger deprecationLogger = new DeprecationLogger(
         LogManager.getLogger(RestMultiGetAction.class));

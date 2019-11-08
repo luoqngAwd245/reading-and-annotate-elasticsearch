@@ -59,7 +59,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableMap;
-
+// 线程池的并发能力，参考利 特尔法则
 public class ThreadPool implements Scheduler, Closeable {
 
     private static final Logger logger = LogManager.getLogger(ThreadPool.class);
@@ -168,20 +168,32 @@ public class ThreadPool implements Scheduler, Closeable {
 
         final Map<String, ExecutorBuilder> builders = new HashMap<>();
         final int availableProcessors = EsExecutors.numberOfProcessors(settings);
+        // 这个变量的意思是availableProcessors的一半，但最大不超过5
         final int halfProcMaxAt5 = halfNumberOfProcessorsMaxFive(availableProcessors);
+        // 这个变量的意思是availableProcessors的一半，但最大不超过10
         final int halfProcMaxAt10 = halfNumberOfProcessorsMaxTen(availableProcessors);
+        // 就能确定线程池的最小值，可用CPU处理器数量的4倍，且固定范围为最小128，最大为512
         final int genericThreadPoolMax = boundedBy(4 * availableProcessors, 128, 512);
+        // 普通操作的Executor：构建一个可伸缩的Executor构建器，value为ScalingExecutorBuilder对象。
         builders.put(Names.GENERIC, new ScalingExecutorBuilder(Names.GENERIC, 4, genericThreadPoolMax, TimeValue.timeValueSeconds(30)));
+
         builders.put(Names.WRITE, new FixedExecutorBuilder(settings, Names.WRITE, availableProcessors, 200));
+
         builders.put(Names.GET, new FixedExecutorBuilder(settings, Names.GET, availableProcessors, 1000));
+
         builders.put(Names.ANALYZE, new FixedExecutorBuilder(settings, Names.ANALYZE, 1, 16));
+
         builders.put(Names.SEARCH, new AutoQueueAdjustingExecutorBuilder(settings,
                         Names.SEARCH, searchThreadPoolSize(availableProcessors), 1000, 1000, 1000, 2000));
         builders.put(Names.SEARCH_THROTTLED, new AutoQueueAdjustingExecutorBuilder(settings,
             Names.SEARCH_THROTTLED, 1, 100, 100, 100, 200));
+        // 管理操作的Executor：构建一个可伸缩的Executor构建器。key为management，value为ScalingExecutorBuilder对象
         builders.put(Names.MANAGEMENT, new ScalingExecutorBuilder(Names.MANAGEMENT, 1, 5, TimeValue.timeValueMinutes(5)));
         // no queue as this means clients will need to handle rejections on listener queue even if the operation succeeded
         // the assumption here is that the listeners should be very lightweight on the listeners side
+        // 没有队列，因为这意味着即使操作成功，客户端也需要处理侦听器队列上的拒绝
+        // 这里的假设是，听众应在听众一侧非常轻巧
+        // 监听操作的Executor：构建一个固定的Executor构建器。key为listener，value为FixedExecutorBuilder对象，
         builders.put(Names.LISTENER, new FixedExecutorBuilder(settings, Names.LISTENER, halfProcMaxAt10, -1));
         builders.put(Names.FLUSH, new ScalingExecutorBuilder(Names.FLUSH, 1, halfProcMaxAt5, TimeValue.timeValueMinutes(5)));
         builders.put(Names.REFRESH, new ScalingExecutorBuilder(Names.REFRESH, 1, halfProcMaxAt10, TimeValue.timeValueMinutes(5)));

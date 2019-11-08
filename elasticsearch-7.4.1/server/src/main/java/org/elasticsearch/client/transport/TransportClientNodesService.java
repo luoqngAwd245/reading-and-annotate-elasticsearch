@@ -70,6 +70,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+//Client的负载均衡是通过TransportClientNodesService类实现的。TransportClientNodesService实例维护一组DiscoveryNode引用，每次客户端请求的时候，会根据负载均衡算法选中一个节点（DiscoveryNode），发送请求。常用的负载算法有Random，Round robin，Hash，StaticWeighted等。ES的客户端负载使用了Round robin算法。
+
+
 final class TransportClientNodesService implements Closeable {
 
     private static final Logger logger = LogManager.getLogger(TransportClientNodesService.class);

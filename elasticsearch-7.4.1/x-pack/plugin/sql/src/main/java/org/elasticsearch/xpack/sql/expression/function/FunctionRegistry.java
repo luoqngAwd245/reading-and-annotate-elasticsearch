@@ -137,6 +137,8 @@ public class FunctionRegistry {
     // list of functions grouped by type of functions (aggregate, statistics, math etc) and ordered alphabetically inside each group
     // a single function will have one entry for itself with its name associated to its instance and, also, one entry for each alias
     // it has with the alias name associated to the FunctionDefinition instance
+    // 按功能类型分组的功能列表（聚合，统计，数学等），并在每个组内按字母顺序排列。单个功能本身将具有一个条目，其名称与实例相关联，并且具有的每个别名也具有一个条目
+    // 与FunctionDefinition实例关联的别名。
     private final Map<String, FunctionDefinition> defs = new LinkedHashMap<>();
     private final Map<String, String> aliases = new HashMap<>();
 
@@ -373,7 +375,7 @@ public class FunctionRegistry {
         };
         return def(function, builder, false, names);
     }
-    
+
     interface ConfigurationAwareFunctionBuilder<T> {
         T build(Source source, Configuration configuration);
     }
@@ -442,7 +444,7 @@ public class FunctionRegistry {
     interface MultiFunctionBuilder<T> {
         T build(Source source, List<Expression> children);
     }
-    
+
     /**
      * Build a {@linkplain FunctionDefinition} for a unary function that is not
      * aware of time zone but does support {@code DISTINCT}.

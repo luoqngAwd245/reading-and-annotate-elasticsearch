@@ -181,6 +181,7 @@ public class TransportService extends AbstractLifecycleComponent implements Tran
                 remoteClusterService.listenForUpdates(clusterSettings);
             }
         }
+
         registerRequestHandler(
             HANDSHAKE_ACTION_NAME,
             ThreadPool.Names.SAME,
@@ -689,6 +690,7 @@ public class TransportService extends AbstractLifecycleComponent implements Tran
                 assert options.timeout() != null;
                 timeoutHandler.scheduleTimeout(options.timeout());
             }
+            // 本地节点优化发生在upstream
             connection.sendRequest(requestId, action, request, options); // local node optimization happens upstream
         } catch (final Exception e) {
             // usually happen either because we failed to connect to the node

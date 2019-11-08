@@ -21,12 +21,14 @@ package org.elasticsearch.rest.action.document;
 
 import org.apache.logging.log4j.LogManager;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.ActiveShardCount;
 import org.elasticsearch.client.node.NodeClient;
 import org.elasticsearch.common.logging.DeprecationLogger;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.mapper.MapperService;
 import org.elasticsearch.rest.BaseRestHandler;
+import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.action.RestActions;
@@ -34,6 +36,8 @@ import org.elasticsearch.rest.action.RestStatusToXContentListener;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.function.Function;
+import java.lang.String;
 
 import static org.elasticsearch.rest.RestRequest.Method.POST;
 import static org.elasticsearch.rest.RestRequest.Method.PUT;
@@ -118,7 +122,18 @@ public class RestIndexAction extends BaseRestHandler {
         if (sOpType != null) {
             indexRequest.opType(sOpType);
         }
-
+        // 改成JDK7版本
+//        RestChannelConsumer result = new RestChannelConsumer() {
+//            @Override
+//            public void accept(RestChannel restChannel) throws Exception {
+//                client.index(indexRequest, new　RestStatusToXContentListener<IndexResponse>(restChannel, new Function<IndexResponse, String>(){
+//                        @Override
+//                        public String apply(IndexResponse indexResponse) {
+//                            return indexResponse.getLocation(indexRequest.routing());
+//                        }
+//                    }));
+//            }
+//        };
         return channel ->
                 client.index(indexRequest, new RestStatusToXContentListener<>(channel, r -> r.getLocation(indexRequest.routing())));
     }

@@ -26,10 +26,7 @@ import org.elasticsearch.client.node.NodeClient;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.logging.DeprecationLogger;
 import org.elasticsearch.index.VersionType;
-import org.elasticsearch.rest.BaseRestHandler;
-import org.elasticsearch.rest.RestController;
-import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.rest.*;
 import org.elasticsearch.rest.action.RestActions;
 import org.elasticsearch.rest.action.RestToXContentListener;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
@@ -40,7 +37,8 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
 import static org.elasticsearch.rest.RestRequest.Method.HEAD;
 import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
 import static org.elasticsearch.rest.RestStatus.OK;
-
+// Get 命令必须指定三元组: index\type\id, 根据文档id从正排索引中获取内容
+// TransportGetAction:shardOperation/2
 public class RestGetAction extends BaseRestHandler {
     private static final DeprecationLogger deprecationLogger = new DeprecationLogger(
         LogManager.getLogger(RestGetAction.class));
@@ -91,6 +89,18 @@ public class RestGetAction extends BaseRestHandler {
         getRequest.versionType(VersionType.fromString(request.param("version_type"), getRequest.versionType()));
 
         getRequest.fetchSourceContext(FetchSourceContext.parseFromRestRequest(request));
+
+//        return  new RestChannelConsumer() {
+//            @Override
+//            public void accept(RestChannel restChannel) throws Exception {
+//                client.get(getRequest, new RestToXContentListener<GetResponse>(restChannel) {
+//                    @Override
+//                    protected RestStatus getStatus(final GetResponse response) {
+//                        return response.isExists() ? OK : NOT_FOUND;
+//                    }
+//                });
+//            }
+//        };
 
         return channel -> client.get(getRequest, new RestToXContentListener<GetResponse>(channel) {
             @Override

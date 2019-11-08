@@ -143,11 +143,12 @@ public abstract class TransportSingleShardAction<Request extends SingleShardRequ
 
         private AsyncSingleAction(Request request, ActionListener<Response> listener) {
             this.listener = listener;
-
+            // 集群状态
             ClusterState clusterState = clusterService.state();
             if (logger.isTraceEnabled()) {
                 logger.trace("executing [{}] based on cluster state version [{}]", request, clusterState.version());
             }
+            //集群节点列表
             nodes = clusterState.nodes();
             ClusterBlockException blockException = checkGlobalBlock(clusterState);
             if (blockException != null) {
@@ -161,19 +162,21 @@ public abstract class TransportSingleShardAction<Request extends SingleShardRequ
                 concreteSingleIndex = request.index();
             }
             this.internalRequest = new InternalRequest(request, concreteSingleIndex);
+            // 解析请求，更新自定义routing
             resolveRequest(clusterState, internalRequest);
 
             blockException = checkRequestBlock(clusterState, internalRequest);
             if (blockException != null) {
                 throw blockException;
             }
-
+            // 根据路由算法得到目的shard迭代器，或者根据优先级选择目标节点
             this.shardIt = shards(clusterState, internalRequest);
         }
 
         public void start() {
             if (shardIt == null) {
                 // just execute it on the local node
+                // 只在本地节点执行
                 final Writeable.Reader<Response> reader = getResponseReader();
                 transportService.sendRequest(clusterService.localNode(), transportShardAction, internalRequest.request(),
                     new TransportResponseHandler<Response>() {

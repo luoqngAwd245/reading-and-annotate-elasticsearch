@@ -84,14 +84,17 @@ public abstract class BaseRestHandler implements RestHandler {
     @Override
     public final void handleRequest(RestRequest request, RestChannel channel, NodeClient client) throws Exception {
         // prepare the request for execution; has the side effect of touching the request parameters
+        // 准备执行请求； 具有触摸请求参数的副作用
         final RestChannelConsumer action = prepareRequest(request, client);
 
         // validate unconsumed params, but we must exclude params used to format the response
         // use a sorted set so the unconsumed parameters appear in a reliable sorted order
+        // 验证未使用的参数，但是我们必须使用排序集排除用于格式化响应的参数，以便未使用的参数以可靠的排序顺序显示
         final SortedSet<String> unconsumedParams =
             request.unconsumedParams().stream().filter(p -> !responseParams().contains(p)).collect(Collectors.toCollection(TreeSet::new));
 
         // validate the non-response params
+        //验证无响应参数
         if (!unconsumedParams.isEmpty()) {
             final Set<String> candidateParams = new HashSet<>();
             candidateParams.addAll(request.consumedParams());

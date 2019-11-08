@@ -98,11 +98,11 @@ public class TransportGetAction extends TransportSingleShardAction<GetRequest, G
     protected GetResponse shardOperation(GetRequest request, ShardId shardId) {
         IndexService indexService = indicesService.indexServiceSafe(shardId.getIndex());
         IndexShard indexShard = indexService.getShard(shardId.id());
-
+        //检查是否需要refresh
         if (request.refresh() && !request.realtime()) {
             indexShard.refresh("refresh_flag_get");
         }
-
+        // ShardGetService#get 调用ShardGetService#innerget
         GetResult result = indexShard.getService().get(request.type(), request.id(), request.storedFields(),
                 request.realtime(), request.version(), request.versionType(), request.fetchSourceContext());
         return new GetResponse(result);
