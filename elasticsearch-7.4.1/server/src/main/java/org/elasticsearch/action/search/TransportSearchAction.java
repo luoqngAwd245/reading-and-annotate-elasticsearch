@@ -468,6 +468,7 @@ public class TransportSearchAction extends HandledTransportAction<SearchRequest,
         // TODO: I think startTime() should become part of ActionRequest and that should be used both for index name
         // date math expressions and $now in scripts. This way all apis will deal with now in the same way instead
         // of just for the _search api
+        // 日期数学表达式和脚本中的$ now。 这样，所有api现在都将以相同的方式处理，而不仅仅是_search api
         final Index[] indices = resolveLocalIndices(localIndices, searchRequest.indicesOptions(), clusterState, timeProvider);
         Map<String, AliasFilter> aliasFilter = buildPerIndexAliasFilter(searchRequest, clusterState, indices, remoteAliasMap);
         Map<String, Set<String>> routingMap = indexNameExpressionResolver.resolveSearchRouting(clusterState, searchRequest.routing(),
@@ -479,6 +480,7 @@ public class TransportSearchAction extends HandledTransportAction<SearchRequest,
             //Execute two separate searches when we can, so that indices that are being written to are searched as quickly as possible.
             //Otherwise their search context would need to stay open for too long between the query and the fetch phase, due to other
             //indices (possibly slower) being searched at the same time.
+            // 我们会尽可能执行两次单独的搜索，以便尽快搜索正在写入的索引，否则由于其他索引（可能较慢），它们的搜索上下文在查询和获取阶段之间需要保持打开状态的时间过长 ）同时被搜索。
             List<String> writeIndicesList = new ArrayList<>();
             List<String> readOnlyIndicesList = new ArrayList<>();
             splitIndices(indices, clusterState, writeIndicesList, readOnlyIndicesList);
@@ -513,6 +515,7 @@ public class TransportSearchAction extends HandledTransportAction<SearchRequest,
 
                 //Note that the indices set to the new SearchRequest won't be retrieved from it, as they have been already resolved and
                 //will be provided separately to executeSearch.
+                // 请注意，设置为新SearchRequest的索引将不会从中检索，因为它们已被解析，并将单独提供给executeSearch。
                 SearchRequest writeIndicesRequest = SearchRequest.subSearchRequest(searchRequest, writeIndices,
                     RemoteClusterService.LOCAL_CLUSTER_GROUP_KEY, timeProvider.getAbsoluteStartMillis(), false);
                 executeSearch(task, timeProvider, writeIndicesRequest, localIndices, writeIndices, routingMap,
@@ -521,6 +524,7 @@ public class TransportSearchAction extends HandledTransportAction<SearchRequest,
 
                 //Note that the indices set to the new SearchRequest won't be retrieved from it, as they have been already resolved and
                 //will be provided separately to executeSearch.
+                //请注意，设置为新SearchRequest的索引将不会从中检索，因为它们已被解析，并将单独提供给executeSearch。
                 SearchRequest readOnlyIndicesRequest = SearchRequest.subSearchRequest(searchRequest, readOnlyIndices,
                     RemoteClusterService.LOCAL_CLUSTER_GROUP_KEY, timeProvider.getAbsoluteStartMillis(), false);
                 executeSearch(task, timeProvider, readOnlyIndicesRequest, localIndices, readOnlyIndices, routingMap,
@@ -565,19 +569,23 @@ public class TransportSearchAction extends HandledTransportAction<SearchRequest,
         failIfOverShardCountLimit(clusterService, shardIterators.size());
 
         // optimize search type for cases where there is only one shard group to search on
+        // 针对仅要搜索一个分片组的情况优化搜索类型。
         if (shardIterators.size() == 1) {
             // if we only have one group, then we always want Q_T_F, no need for DFS, and no need to do THEN since we hit one shard
+            // 如果我们只有一组，那么我们总是要Q_T_F，不需要DFS，也不需要做THEN，因为我们碰到了一个碎片。
             searchRequest.searchType(QUERY_THEN_FETCH);
         }
         if (searchRequest.allowPartialSearchResults() == null) {
            // No user preference defined in search request - apply cluster service default
+            // 在搜索请求中未定义用户首选项-默认应用集群服务
             searchRequest.allowPartialSearchResults(searchService.defaultAllowPartialSearchResults());
         }
         if (searchRequest.isSuggestOnly()) {
             // disable request cache if we have only suggest
+            // 如果我们仅建议禁用请求缓存
             searchRequest.requestCache(false);
             if (searchRequest.searchType() == DFS_QUERY_THEN_FETCH) {
-                // convert to Q_T_F if we have only suggest
+                // convert to Q_T_F if we have only suggest 如果我们只建议转换为Q_T_F
                 searchRequest.searchType(QUERY_THEN_FETCH);
             }
         }

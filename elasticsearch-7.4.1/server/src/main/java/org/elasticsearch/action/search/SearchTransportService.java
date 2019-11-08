@@ -130,6 +130,7 @@ public class SearchTransportService {
                                  final SearchActionListener<SearchPhaseResult> listener) {
         // we optimize this and expect a QueryFetchSearchResult if we only have a single shard in the search request
         // this used to be the QUERY_AND_FETCH which doesn't exist anymore.
+        // 我们对此进行了优化，并且如果搜索请求中只有一个分片（过去是QUERY_AND_FETCH，该分片不再存在），则期望QueryFetchSearchResult。
         final boolean fetchDocuments = request.numberOfShards() == 1;
         Writeable.Reader<SearchPhaseResult> reader = fetchDocuments ? QueryFetchSearchResult::new : QuerySearchResult::new;
 

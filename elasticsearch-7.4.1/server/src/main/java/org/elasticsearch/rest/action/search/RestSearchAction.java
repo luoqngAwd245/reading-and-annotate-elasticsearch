@@ -55,12 +55,23 @@ import static org.elasticsearch.common.unit.TimeValue.parseTimeValue;
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 import static org.elasticsearch.rest.RestRequest.Method.POST;
 import static org.elasticsearch.search.suggest.SuggestBuilders.termSuggestion;
+// Search 不指定_id, 根据关键词从倒排索引中获取内容。接收请求的节点称为协调节点。在协调节点，搜索任务执行分成两个阶段,即 query 和fetch，真正执行
+// 收索任务的节点称为数据节点
+// 两种搜索类型：QUERY_THEN_FETCH,DFS_QUERY_THEN_FEATCH
 
+//1、query then fetch（默认的搜索方式）
+//
+//如果你搜索时，没有指定搜索方式，就是使用的这种搜索方式。这种搜索方式，大概分两个步骤，第一步，先向所有的shard发出请求，各分片只返回排序和排名相关的信息（注意，不包括文档document)，然后按照各分片返回的分数进行重新排序和排名，取前size个文档。然后进行第二步，去相关的shard取document。这种方式返回的document与用户要求的size是相等的。
+//
+//2、DFS query then fetch
+//
+//比第1种方式多了一个初始化散发(initial scatter)步骤。
 public class RestSearchAction extends BaseRestHandler {
     /**
      * Indicates whether hits.total should be rendered as an integer or an object
      * in the rest search response.
      */
+    // 指示在其余搜索响应中将hits.total应该呈现为整数还是对象。
     public static final String TOTAL_HITS_AS_INT_PARAM = "rest_total_hits_as_int";
     public static final String TYPED_KEYS_PARAM = "typed_keys";
     private static final Set<String> RESPONSE_PARAMS;
@@ -105,6 +116,11 @@ public class RestSearchAction extends BaseRestHandler {
          * be null later. If that is confusing to you then you are in good
          * company.
          */
+        // 我们必须撤消对`source（）。size（size）`的调用，因为_update_by_query和_delete_by_query使用相同的解析
+        //路径，但是当它看到`size` url参数时设置一个不同的变量。
+        //
+        //注意，我们不能使用`searchRequest.source（）:: size`，因为
+        //“ searchRequest.source（）”目前为空。 我们不必在IntConsumer中防止它为null，因为以后它不能为null。 如果这使您感到困惑，那么您的陪伴很好。
         IntConsumer setSize = size -> searchRequest.source().size(size);
         request.withContentOrSourceParamParserOrNull(parser ->
             parseSearchRequest(searchRequest, request, parser, setSize));
@@ -141,6 +157,7 @@ public class RestSearchAction extends BaseRestHandler {
         if (request.hasParam("max_concurrent_shard_requests")) {
             // only set if we have the parameter since we auto adjust the max concurrency on the coordinator
             // based on the number of nodes in the cluster
+            // 仅在具有参数的情况下设置，因为我们会根据集群中的节点数自动调整协调器上的最大并发性。
             final int maxConcurrentShardRequests = request.paramAsInt("max_concurrent_shard_requests",
                 searchRequest.getMaxConcurrentShardRequests());
             searchRequest.setMaxConcurrentShardRequests(maxConcurrentShardRequests);
@@ -148,12 +165,14 @@ public class RestSearchAction extends BaseRestHandler {
 
         if (request.hasParam("allow_partial_search_results")) {
             // only set if we have the parameter passed to override the cluster-level default
+            // 仅当我们传递参数以覆盖集群级别的默认值时才设置。
             searchRequest.allowPartialSearchResults(request.paramAsBoolean("allow_partial_search_results", null));
         }
 
         // do not allow 'query_and_fetch' or 'dfs_query_and_fetch' search types
         // from the REST layer. these modes are an internal optimization and should
         // not be specified explicitly by the user.
+        // 不允许使用“ query_and_fetch”或“ dfs_query_and_fetch”搜索类型从REST层开始。 这些模式是内部优化，不应由用户明确指定。
         String searchType = request.param("search_type");
         if ("query_and_fetch".equals(searchType) ||
                 "dfs_query_and_fetch".equals(searchType)) {
