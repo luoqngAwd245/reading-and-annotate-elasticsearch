@@ -71,6 +71,10 @@ import java.util.function.UnaryOperator;
  * elected as master, it requests metaData from other master eligible nodes. After that, master node performs re-conciliation on the
  * gathered results, re-creates {@link ClusterState} and broadcasts this state to other nodes in the cluster.
  */
+// 此类负责将元数据存储到磁盘或从磁盘检索元数据。创建此类的实例时，构造函数确保此版本与磁盘上存储的状态兼容，并在必要时执行状态升级。
+// 此外，它还检查文件系统级别是否支持原子移动，因为这是元数据存储算法所必需的。 请注意，构造此类的实例时正在加载的状态不是将用作
+// {@link ClusterState＃metaData（）}的状态。 而是在节点启动时，它调用{@link #getMetaData（）}方法，如果该节点被选为主节点，
+// 它将从其他符合主条件的节点请求metaData。 之后，主节点对收集的结果执行调和，重新创建{@link ClusterState}并将此状态广播到群集中的其他节点。
 public class GatewayMetaState implements ClusterStateApplier, CoordinationState.PersistedState {
     protected static final Logger logger = LogManager.getLogger(GatewayMetaState.class);
 
@@ -149,6 +153,9 @@ public class GatewayMetaState implements ClusterStateApplier, CoordinationState.
                 // if there is manifest file, it means metadata is properly persisted to all data paths
                 // if there is no manifest file (upgrade from 6.x to 7.x) metadata might be missing on some data paths,
                 // but anyway we will re-write it as soon as we receive first ClusterState
+                // 我们完成了全局状态验证，并成功检查了所有索引的向后兼容性，没有发现不可升级的索引，这意味着升级可以继续。 现在可以安全地覆盖全局和索引元数据。
+                // 如果没有通过升级插件进行升级，我们不会重写元数据，因为如果存在清单文件，则意味着如果没有清单文件（从6.x升级到7.x），则元数据会正确保存在
+                // 所有数据路径中。 元数据在某些数据路径上可能会丢失，但是无论如何，我们将在收到第一个ClusterState之后立即将其重写。
                 final AtomicClusterStateWriter writer = new AtomicClusterStateWriter(metaStateService, manifest);
                 final MetaData upgradedMetaData = upgradeMetaData(metaData, metaDataIndexUpgradeService, metaDataUpgrader);
 
@@ -187,6 +194,7 @@ public class GatewayMetaState implements ClusterStateApplier, CoordinationState.
 
     @Override
     public void applyClusterState(ClusterChangedEvent event) {
+        //只有具备master资格的节点和数据节点才会持久化元数据
         if (isMasterOrDataNode() == false) {
             return;
         }
@@ -200,6 +208,8 @@ public class GatewayMetaState implements ClusterStateApplier, CoordinationState.
             // Hack: This is to ensure that non-master-eligible Zen2 nodes always store a current term
             // that's higher than the last accepted term.
             // TODO: can we get rid of this hack?
+            // 骇客：这是为了确保非主设备资格的Zen2节点始终存储比上一个接受的轮次更高的当前轮次。
+            // TODO：我们可以摆脱这种黑客吗？
             if (event.state().term() > getCurrentTerm()) {
                 innerSetCurrentTerm(event.state().term());
             }
@@ -343,10 +353,10 @@ public class GatewayMetaState implements ClusterStateApplier, CoordinationState.
         MetaData newMetaData = newState.metaData();
 
         final AtomicClusterStateWriter writer = new AtomicClusterStateWriter(metaStateService, previousManifest);
-        long globalStateGeneration = writeGlobalState(writer, newMetaData);
-        Map<Index, Long> indexGenerations = writeIndicesMetadata(writer, newState, previousState);
+        long globalStateGeneration = writeGlobalState(writer, newMetaData); //写全局元信息
+        Map<Index, Long> indexGenerations = writeIndicesMetadata(writer, newState, previousState); //写索引元信息
         Manifest manifest = new Manifest(previousManifest.getCurrentTerm(), newState.version(), globalStateGeneration, indexGenerations);
-        writeManifest(writer, manifest);
+        writeManifest(writer, manifest); //写manifest
 
         previousManifest = manifest;
         previousClusterState = newState;
