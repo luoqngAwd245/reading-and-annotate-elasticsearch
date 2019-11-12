@@ -286,6 +286,7 @@ public class RecoverySourceHandler {
             sendFileStep.whenComplete(r -> {
                 assert Transports.assertNotTransportThread(RecoverySourceHandler.this + "[prepareTargetForTranslog]");
                 // For a sequence based recovery, the target can keep its local translog
+                // 对于基于序列的恢复，目标可以保留其本地事务日志
                 prepareTargetForTranslog(shard.estimateNumberOfHistoryOperations("peer-recovery", startingSeqNo), prepareEngineStep);
             }, onFailure);
 
@@ -537,6 +538,8 @@ public class RecoverySourceHandler {
                         // the commit we just copied to be a safe commit on the replica, so why not set the global checkpoint on the replica
                         // to the max seqno of this commit? Because (in rare corner cases) this commit might not be a safe commit here on
                         // the primary, and in these cases the max seqno would be too high to be valid as a global checkpoint.
+                        // 在全局检查点设置为lastKnownGlobalCheckpoint的副本上建立新的空事务日志。 我们希望我们刚刚复制的提交是对副本的安全提交，那么为什么不将副本上的
+                        // 全局检查点设置为该提交的最大seqno？ 因为（在极少数情况下）此提交在主数据库上可能不是安全的提交，并且在这些情况下，最大seqno太高而不能用作全局检查点。
                         cleanFiles(store, recoverySourceMetadata, translogOps, lastKnownGlobalCheckpoint, cleanFilesStep);
                     },
                     listener::onFailure);
@@ -635,6 +638,8 @@ public class RecoverySourceHandler {
             e -> listener.onFailure(new RecoveryEngineException(shard.shardId(), 1, "prepare target for translog failed", e)));
         // Send a request preparing the new shard's translog to receive operations. This ensures the shard engine is started and disables
         // garbage collection (not the JVM's GC!) of tombstone deletes.
+        // 发送准备新分片的Translog的请求以接收操作。 这可确保分片引擎已启动并禁用
+        // 删除逻辑删除的垃圾回收（不是JVM的GC！）。
         logger.trace("recovery [phase1]: prepare remote engine for translog");
         cancellableThreads.execute(() ->
             recoveryTarget.prepareForTranslogOperations(totalTranslogOps, wrappedListener));
@@ -742,6 +747,7 @@ public class RecoverySourceHandler {
         assert Transports.assertNotTransportThread(RecoverySourceHandler.this + "[send translog]");
         final List<Translog.Operation> operations = nextBatch.get();
         // send the leftover operations or if no operations were sent, request the target to respond with its local checkpoint
+        // 发送剩余的操作，或者如果未发送任何操作，请请求目标以其本地检查点进行响应
         if (operations.isEmpty() == false || firstBatch) {
             cancellableThreads.execute(() -> {
                 recoveryTarget.indexTranslogOperations(

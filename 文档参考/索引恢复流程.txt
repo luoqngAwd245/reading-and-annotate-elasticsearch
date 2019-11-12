@@ -1,0 +1,58 @@
+****************************************主分片恢复流程**********************************
+recovery 由clusterChanged触发，从触发到开始执行恢复的调用关系入下：
+INIT阶段：
+IndicesClusterStateService：applyClusterState/1 -> IndicesClusterStateService:createOrUpdateShards/1 -> IndicesClusterStateService:createShard/4
+->IndicesService:createShard/8->IndexShard:startRecovery/6-> IndexShard:recoverFromStore/0->StoreRecovery:recoverFromStore/1->StoreRecovery:executeRecovery/2->StoreRecovery:internalRecoverFromStore/1->IndexShard:prepareForIndexRecovery
+
+Index阶段：
+IndexShard:store/0 -> IndexShard:openEngineAndRecoverFromTranslog/0
+VERIFY_INDEX(是否验证取决于配置):
+IndexShard:maybeCheckIndex
+
+TRANSLOG阶段：
+IndexShard：innerOpenEngineAndTranslog/1 -> InternalEngine:recoverFromTranslog/2->InternalEngine:recoverFromTranslogInternal/2->IndexShard:runTranslogRecovery/4->IndexShard:finalizeRecovery/0
+
+FINALIZE阶段：
+InternalEngine：refresh/1-> IndexShard:postRecovery/1
+
+DONE阶段：
+InternalEngine：refresh/1->IndicesClusterStateService.RecoveryListener:onRecoveryDone/1-> ShardStateAction:shardStarted/4->ShardStateAction:shardStarted/5->ShardStateAction:sendShardAction/4
+->TransportService:sendRequest/4
+
+*******************************副分片恢复流程****************************************
+INIT阶段：
+PeerRecoveryTargetService：startRecovery->RecoveriesCollection:startRecovery/4->RecoveriesCollection:startRecoveryInternal/2->
+RecoveriesCollection.RecoveryMonitor:doRun/0->PeerRecoveryTargetService.RecoveryRunner:doRun/0->PeerRecoveryTargetService:doRecovery/1->IndexShard:prepareForIndexRecovery/0-> TransportService:submitRequest/4
+
+Index阶段：
+1)副分片节点
+PeerRecoveryTargetService.FilesInfoRequestHandler:messageReceived/3->RecoverTarget:receiveFileInfo/6->IndexShard:prepareForIndexRecovery/0
+2) 主分片节点
+PeerRecoverySourceService.StartRecoveryTransportRequestHandler：messageReceived/3-> PeerRecoverySourceService:recover/2->RecoverySourceHandler:recoverToTarget/1
+->RecoverySourceHandler:phase1/3->RemoteRecoveryTargetHandler:receiveFileInfo/6->RecoverySourceHandler:sendFiles/3->RecoverySourceHandler:cleanFiles/5
+
+VERIFY_INDEX(是否验证取决于配置):
+1)副分片节点
+PeerRecoveryTargetService.PrepareForTranslogOperationsRequestHandler:messageReceived/3->RecoverTarget:prepareForTranslogOperations/2->IndexShard:openEngineAndSkipTranslogRecovery/0->
+InternalEngine:skipTranslogRecovery/0
+2）主分片（发送PREPARE_TRANSLOG）
+RecoverySourceHandler:prepareTargetForTranslog/2->RemoteRecoveryTargetHandler:prepareForTranslogOperations/2->
+TransportService:submitRequest/5
+
+TRANSLOG阶段：
+1) 副分片节点
+PeerRecoveryTargetService.TranslogOperationsRequestHandler:messageReceived/3->RecoveryTarget:indexTranslogOperations/5-> IndexShard:applyTranslogOperation/2->IndexShard:applyTranslogOperation/3
+->IndexShard:markSeqNoAsNoop/5
+2）主分片节点（发送日志，TRANSLOG_OPS）
+RecoverySourceHandler：phase2/8->RecoverySourceHandler:sendBatch/9->RemoteRecoveryTargetHandler:indexTranslogOperations/7->TransportService:submitRequest/5(重复执行直到最后一条log）
+
+FINALIZE阶段：
+1)副分片
+PeerRecoveryTargetService.FinalizeRecoveryRequestHandler:messageReceived/3->RecoveryTarget:finalizeRecovery->IndexShard:finalizeRecovery/0
+2）主分片
+RecoverySourceHandler：finalizeRecovery/3->RemoteRecoveryTargetHandler:finalizeRecovery/3->TransportService:submitRequest/5
+
+Done阶段：
+InternalEngine：refresh/1->IndicesClusterStateService.RecoveryListener:onRecoveryDone/1-> ShardStateAction:shardStarted/4->ShardStateAction:shardStarted/5->ShardStateAction:sendShardAction/4
+->TransportService:sendRequest/4
+

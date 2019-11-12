@@ -1598,6 +1598,7 @@ public class IndexShard extends AbstractIndexShardComponent implements IndicesCl
 
         // we disable deletes since we allow for operations to be executed against the shard while recovering
         // but we need to make sure we don't loose deletes until we are done recovering
+        // 我们禁用删除操作，因为我们允许在恢复时对分片执行操作，但是我们需要确保在完成恢复操作之前不要丢失删除操作
         config.setEnableGcDeletes(false);
         updateRetentionLeasesOnReplica(loadRetentionLeases());
         assert recoveryState.getRecoverySource().expectEmptyRetentionLeases() == false || getRetentionLeases().leases().isEmpty()
@@ -1847,6 +1848,7 @@ public class IndexShard extends AbstractIndexShardComponent implements IndicesCl
     public boolean recoverFromStore() {
         // we are the first primary, recover from the gateway
         // if its post api allocation, the index should exists
+        // 我们是第一个主节点，如果其后API分配从网关恢复，则索引应该存在
         assert shardRouting.primary() : "recover from store only makes sense if the shard is a primary shard";
         assert shardRouting.initializing() : "can only start recovery on initializing shard";
         StoreRecovery storeRecovery = new StoreRecovery(shardId, logger);
@@ -2518,6 +2520,7 @@ public class IndexShard extends AbstractIndexShardComponent implements IndicesCl
         switch (recoveryState.getRecoverySource().getType()) {
             case EMPTY_STORE:
             case EXISTING_STORE:
+                //主分片从本地恢复
                 markAsRecovering("from store", recoveryState); // mark the shard as recovering on the cluster state thread
                 threadPool.generic().execute(() -> {
                     try {
@@ -2531,6 +2534,7 @@ public class IndexShard extends AbstractIndexShardComponent implements IndicesCl
                 });
                 break;
             case PEER:
+                // 副分片从远程主分片恢复
                 try {
                     markAsRecovering("from " + recoveryState.getSourceNode(), recoveryState);
                     recoveryTargetService.startRecovery(this, recoveryState.getSourceNode(), recoveryListener);
@@ -2541,6 +2545,7 @@ public class IndexShard extends AbstractIndexShardComponent implements IndicesCl
                 }
                 break;
             case SNAPSHOT:
+                // 从快照恢复
                 markAsRecovering("from snapshot", recoveryState); // mark the shard as recovering on the cluster state thread
                 SnapshotRecoverySource recoverySource = (SnapshotRecoverySource) recoveryState.getRecoverySource();
                 threadPool.generic().execute(() -> {
@@ -2556,6 +2561,7 @@ public class IndexShard extends AbstractIndexShardComponent implements IndicesCl
                 });
                 break;
             case LOCAL_SHARDS:
+                // 从本结点的其他分片恢复(shrink)
                 final IndexMetaData indexMetaData = indexSettings().getIndexMetaData();
                 final Index resizeSourceIndex = indexMetaData.getResizeSourceIndex();
                 final List<IndexShard> startedShards = new ArrayList<>();

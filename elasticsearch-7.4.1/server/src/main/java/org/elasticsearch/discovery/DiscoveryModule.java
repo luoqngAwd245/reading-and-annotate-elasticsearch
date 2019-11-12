@@ -63,6 +63,12 @@ import static org.elasticsearch.node.Node.NODE_NAME_SETTING;
 
 /**
  * A module for loading classes for node discovery.
+ * 用于加载用于节点发现的类的模块。
+ * discovery有几类：
+ * Azure discovery（类似于多播）,它可作为插件使用。
+ * EC2 discovery,作为插件使用。
+ * Google Compute Engine (GCE) discovery (类似于多播）,它可作为插件使用。
+ * zenDiscovery是elasticsearch的内置并且默认的discovery模块。 它提供unicast发现，并且扩展到支持云环境和其他形式的发现。
  */
 public class DiscoveryModule {
     private static final Logger logger = LogManager.getLogger(DiscoveryModule.class);

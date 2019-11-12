@@ -241,6 +241,8 @@ public class IndicesClusterStateService extends AbstractLifecycleComponent imple
         // we need to clean the shards and indices we have on this node, since we
         // are going to recover them again once state persistence is disabled (no master / not recovered)
         // TODO: feels hacky, a block disables state persistence, and then we clean the allocated shards, maybe another flag in blocks?
+        // 我们需要清理此节点上的分片和索引，因为一旦禁用状态持久性（无主/未恢复），我们将再次恢复它们
+        // TODO：感觉很hacky，一个块禁用了状态持久性，然后我们清除分配的碎片，也许是块中的另一个标志？
         if (state.blocks().disableStatePersistence()) {
             for (AllocatedIndex<? extends Shard> indexService : indicesService) {
                 indicesService.removeIndex(indexService.index(), NO_LONGER_ASSIGNED,

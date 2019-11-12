@@ -74,6 +74,7 @@ import static org.elasticsearch.index.seqno.SequenceNumbers.UNASSIGNED_SEQ_NO;
  * Note, it can be safely assumed that there will only be a single recovery per shard (index+id) and
  * not several of them (since we don't allocate several shard replicas to the same node).
  */
+// 副分片节点执行
 public class PeerRecoveryTargetService implements IndexEventListener {
 
     private static final Logger logger = LogManager.getLogger(PeerRecoveryTargetService.class);
@@ -133,9 +134,11 @@ public class PeerRecoveryTargetService implements IndexEventListener {
 
     public void startRecovery(final IndexShard indexShard, final DiscoveryNode sourceNode, final RecoveryListener listener) {
         // create a new recovery status, and process...
+        // 创建新的恢复状态，然后进行处理...
         final long recoveryId = onGoingRecoveries.startRecovery(indexShard, sourceNode, listener, recoverySettings.activityTimeout());
         // we fork off quickly here and go async but this is called from the cluster state applier thread too and that can cause
         // assertions to trip if we executed it on the same thread hence we fork off to the generic threadpool.
+        // 我们在这里快速分叉并进行异步，但是这也从集群状态应用程序线程中调用，如果在同一线程上执行它，可能导致断言跳闸，因此分叉到通用线程池。
         threadPool.generic().execute(new RecoveryRunner(recoveryId));
     }
 
@@ -259,6 +262,7 @@ public class PeerRecoveryTargetService implements IndexEventListener {
                         public void handleResponse(RecoveryResponse recoveryResponse) {
                             final TimeValue recoveryTime = new TimeValue(timer.time());
                             // do this through ongoing recoveries to remove it from the collection
+                            // 通过进行持续的恢复来将其从集合中删除
                             onGoingRecoveries.markRecoveryAsDone(recoveryId);
                             if (logger.isTraceEnabled()) {
                                 StringBuilder sb = new StringBuilder();

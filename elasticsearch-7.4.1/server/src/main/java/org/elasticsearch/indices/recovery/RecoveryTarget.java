@@ -294,6 +294,7 @@ public class RecoveryTarget extends AbstractRefCounted implements RecoveryTarget
         ActionListener.completeWith(listener, () -> {
             indexShard.updateGlobalCheckpointOnReplica(globalCheckpoint, "finalizing recovery");
             // Persist the global checkpoint.
+            // 持久化全局checkpoint
             indexShard.sync();
             indexShard.persistRetentionLeases();
             if (trimAboveSeqNo != SequenceNumbers.UNASSIGNED_SEQ_NO) {
@@ -302,8 +303,12 @@ public class RecoveryTarget extends AbstractRefCounted implements RecoveryTarget
                 // trim the current generation. It's merely to satisfy the assumption that the current generation does not have any
                 // operation that would be trimmed (see TranslogWriter#assertNoSeqAbove). This assumption does not hold for peer
                 // recovery because we could have received operations above startingSeqNo from the previous primary terms.
+                // 我们应该擦除trimAboveSeqNo之上的所有事务日志操作，因为在阶段2中我们从恢复源收到了相同或较新的副本。 此处并不需要严格要求滚动生成新的跨log日志，
+                // 因为我们不会削减当前的日志。 只是为了满足这样的假设，即当前这一代没有任何将被修剪的操作（请参见TranslogWriter＃assertNoSeqAbove）。
+                // 该假设不适用于对等恢复，因为我们可能已经从先前的主要条款中收到了startingSeqNo以上的操作。
                 indexShard.rollTranslogGeneration();
                 // the flush or translog generation threshold can be reached after we roll a new translog
+                // 在我们滚动一个新的对数后，可以达到刷新或对数生成阈值
                 indexShard.afterWriteOperation();
                 indexShard.trimOperationOfPreviousPrimaryTerms(trimAboveSeqNo);
             }
@@ -347,16 +352,21 @@ public class RecoveryTarget extends AbstractRefCounted implements RecoveryTarget
              * (source of these operations) replicated via replication. Without this step, we may have duplicate documents if we
              * replay these operations first (without timestamp), then optimize append-only requests (with timestamp).
              */
+            // 从主服务器接收的maxSeenAutoIdTimestampOnPrimary至少是将重播任何操作中最高的auto_id_timestamp。 在此处引导此时间戳将禁用对通过复制复制的原始仅追加请求（这些操作的源）的优化。 如果没有此步骤，
+            // 如果我们先（没有时间戳记）重播这些操作，然后再优化（仅带有时间戳记）仅追加请求，我们可能会有重复的文档。
             indexShard().updateMaxUnsafeAutoIdTimestamp(maxSeenAutoIdTimestampOnPrimary);
             /*
              * Bootstrap the max_seq_no_of_updates from the primary to make sure that the max_seq_no_of_updates on this replica when
              * replaying any of these operations will be at least the max_seq_no_of_updates on the primary when that op was executed on.
              */
+            // 从主服务器上引导max_seq_no_of_updates，以确保重播这些操作中的任何操作时，此副本上的max_seq_no_of_updates至少是执行该op时主服务器上的
+            // max_seq_no_of_updates。
             indexShard().advanceMaxSeqNoOfUpdatesOrDeletes(maxSeqNoOfDeletesOrUpdatesOnPrimary);
             /*
              * We have to update the retention leases before we start applying translog operations to ensure we are retaining according to
              * the policy.
              */
+            // 在开始应用跨日志操作之前，我们必须更新保留租约，以确保我们根据政策进行保留。
             indexShard().updateRetentionLeasesOnReplica(retentionLeases);
             for (Translog.Operation operation : operations) {
                 Engine.Result result = indexShard().applyTranslogOperation(operation, Engine.Operation.Origin.PEER_RECOVERY);

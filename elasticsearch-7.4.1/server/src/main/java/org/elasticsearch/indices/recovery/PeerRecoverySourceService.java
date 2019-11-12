@@ -50,6 +50,7 @@ import java.util.Set;
  * The source recovery accepts recovery requests from other peer shards and start the recovery process from this
  * source shard to the target shard.
  */
+// 主分片节点执行
 public class PeerRecoverySourceService implements IndexEventListener {
 
     private static final Logger logger = LogManager.getLogger(PeerRecoverySourceService.class);
