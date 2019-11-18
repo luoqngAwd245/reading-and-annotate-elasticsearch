@@ -57,6 +57,30 @@ import org.elasticsearch.common.settings.Settings;
  *
  * @see Rebalance
  * @see Allocation
+ * 该分配决定器允许通过集群范围的设置进行分片分配/重新平衡 {@link #CLUSTER_ROUTING_ALLOCATION_ENABLE_SETTING} / {@link #CLUSTER_ROUTING_REBALANCE_ENABLE_SETTING}和每个索引设置
+ * {@link #INDEX_ROUTING_ALLOCATION_ENABLE_SETTING} / {@link #INDEX_ROUTING_REBALANCE_ENABLE_SETTING}。
+ * 每个索引设置将覆盖群集范围的设置。
+ *
+ *  <p>
+ * 分配设置可以具有以下值（不区分大小写）：
+ *  <ul>
+ *      <li> <code> NONE </ code>-不允许分片分配。
+ *      <li> <code> NEW_PRIMARIES </ code>-仅允许分配新索引的主分片
+ *    <li> <code> PRIMARIES </ code>-仅允许分配主碎片
+ *     <li> <code> ALL </ code>-允许分配所有分片
+ *  </ ul>
+ *
+ *  <p>
+ * 重新平衡设置可以具有以下值（不区分大小写）：
+ *  <ul>
+ *      <li> <code> NONE </ code>-不允许分片重新平衡。
+ *      <li> <code> REPLICAS </ code>-仅允许副本分片达到平衡
+ *      <li> <code> PRIMARIES </ code>-仅允许主分片达到平衡
+ *     <li> <code> ALL </ code>-允许所有分片保持平衡
+ * </ ul>
+ *
+ *  @请参阅重新平衡
+ *  @请参阅分配
  */
 public class EnableAllocationDecider extends AllocationDecider {
 

@@ -29,6 +29,7 @@ import org.elasticsearch.cluster.routing.allocation.RoutingAllocation;
 /**
  * This {@link org.elasticsearch.cluster.routing.allocation.decider.AllocationDecider} prevents shards that
  * are currently been snapshotted to be moved to other nodes.
+ * {@link org.elasticsearch.cluster.routing.allocation.decider.AllocationDecider}可以防止当前已快照的碎片移动到其他节点。
  */
 public class SnapshotInProgressAllocationDecider extends AllocationDecider {
 

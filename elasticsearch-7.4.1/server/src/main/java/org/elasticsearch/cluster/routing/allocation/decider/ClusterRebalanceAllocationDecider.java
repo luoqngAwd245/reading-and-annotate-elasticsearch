@@ -46,6 +46,15 @@ import org.elasticsearch.common.settings.Settings;
  * <li>{@code always} - Re-balancing is allowed once a shard replication group
  * is active</li>
  * </ul>
+ * 此{@link AllocationDecider}根据群集范围内的活动分片状态控制重新平衡操作。 该决定不能实时配置，应通过以下方式进行集群前启动
+ *  {@code cluster.routing.allocation.allow_rebalance}。 此设置遵循以下值：
+ * <ul>
+ * <li> {@ code index_primaries_active}-仅当所有索引上的所有主分片都处于活动状态时，才允许重新平衡。</ li>
+ *
+ * <li> {@ codeindex_all_active}-仅当所有索引上的所有分片都处于活动状态时，才允许重新平衡。</ li>
+ *
+ *  <li> {@ code always}-分片复制组处于活动状态后，允许重新平衡</ li>
+ * </ ul>
  */
 public class ClusterRebalanceAllocationDecider extends AllocationDecider {
 

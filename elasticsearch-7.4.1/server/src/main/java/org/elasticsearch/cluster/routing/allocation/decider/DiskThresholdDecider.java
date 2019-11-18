@@ -67,6 +67,19 @@ import static org.elasticsearch.cluster.routing.allocation.DiskThresholdSettings
  *
  * <code>cluster.routing.allocation.disk.threshold_enabled</code> is used to
  * enable or disable this decider. It defaults to false (disabled).
+ * {@link DiskThresholdDecider}检查分片的节点是否可能
+ * 被分配给具有足够的磁盘空间。
+ *
+ * 它具有三个可配置的设置，所有这些都可以动态更改：
+ *
+ *  <code> cluster.routing.allocation.disk.watermark.low </ code>是低磁盘水印。尽管可以通过分配分片来传递此水印，但不会将新的分片分配给使用率高于此值的节点。默认为0.85（85.0％）。
+ *
+ *  <code> cluster.routing.allocation.disk.watermark.high </ code>是高磁盘水印。如果节点的使用率高于此值，则不允许将碎片保留在该节点上。另外，如果为节点分配分片导致节点通过此水印，
+ *  则将不允许该水印。默认为0.90（90.0％）。
+ *
+ *  两种水印设置均以已用磁盘百分比或可用空间的确切字节值（例如“ 500mb”）表示
+ *
+ *  <code> cluster.routing.allocation.disk.threshold_enabled </ code>用于启用或禁用此决策程序。默认为false（禁用）。
  */
 public class DiskThresholdDecider extends AllocationDecider {
 

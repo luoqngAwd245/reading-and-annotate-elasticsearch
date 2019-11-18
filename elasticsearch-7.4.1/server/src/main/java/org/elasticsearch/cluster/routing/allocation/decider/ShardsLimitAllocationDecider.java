@@ -50,6 +50,18 @@ import java.util.function.BiPredicate;
  * Note: Reducing the number of shards per node via the index update API can
  * trigger relocation and significant additional load on the clusters nodes.
  * </p>
+ * {@link AllocationDecider}可以在每个索引或整个节点范围内限制每个节点的分片数量。分配器可防止单个节点在分配过程中每个索引在整个索引中拥有超过
+ * {@code index.routing.allocation.total_shards_per_node}和全局{@code cluster.routing.allocation.total_shards_per_node}。可通过索引设置API实时更改此决策程序的限制。
+ *   <p>
+ *  如果将{@code index.routing.allocation.total_shards_per_node}重置为负值，则每个索引的分片每个节点都是无限的。碎片目前在
+ *  {@link ShardRoutingState＃RELOCATING relocing}状态由此被忽略
+ *  {@link AllocationDecider}，直到分片将状态更改为
+ *  {@link ShardRoutingState＃STARTED已开始}，
+ *  {@link ShardRoutingState＃INITIALIZING inializing}或
+ *  {@link ShardRoutingState＃UNASSIGNED未分配}
+ *  <p>
+ *  注意：通过索引更新API减少每个节点的分片数量可能会触发重定位，并在群集节点上产生大量额外负载。
+ *  </ p>
  */
 public class ShardsLimitAllocationDecider extends AllocationDecider {
 

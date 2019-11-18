@@ -32,7 +32,9 @@ import org.elasticsearch.common.settings.Setting;
  * the setting for {@code index.allocation.max_retry} is raised. The default value is {@code 5}.
  * Note: This allocation decider also allows allocation of repeatedly failing shards when the {@code /_cluster/reroute?retry_failed=true}
  * API is manually invoked. This allows single retries without raising the limits.
- *
+ * 一个分配决定程序，如果分片分配已重试N次而没有分片，则阻止分片在任何节点上分配成功。 这意味着，如果分片已连续初始化N次而没有移动到STARTED，则该分片将被忽略，直到
+ * {@code index.allocation.max_retry}的设置被提高。 默认值为{@code 5}。
+ * 注意：当{@code / _cluster / reroute？retry_failed = true}时，此分配决定器还允许分配重复失败的分片API是手动调用的。 这允许单次重试而不会提高限制。
  */
 public class MaxRetryAllocationDecider extends AllocationDecider {
 

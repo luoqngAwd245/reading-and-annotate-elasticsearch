@@ -28,6 +28,7 @@ import org.elasticsearch.cluster.routing.allocation.RoutingAllocation;
 /**
  * This {@link AllocationDecider} prevents shards that have failed to be
  * restored from a snapshot to be allocated.
+ * {@link AllocationDecider}可以防止失败的分片从要分配的快照还原。
  */
 public class RestoreInProgressAllocationDecider extends AllocationDecider {
 

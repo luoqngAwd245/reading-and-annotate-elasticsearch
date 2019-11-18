@@ -31,6 +31,7 @@ import org.elasticsearch.index.shard.ShardId;
 
 /**
  * An allocation decider that ensures we allocate the shards of a target index for resize operations next to the source primaries
+ * 一个分配决定器，可确保我们在源主数据库旁边分配目标索引的分片以进行调整大小操作
  */
 public class ResizeAllocationDecider extends AllocationDecider {
 

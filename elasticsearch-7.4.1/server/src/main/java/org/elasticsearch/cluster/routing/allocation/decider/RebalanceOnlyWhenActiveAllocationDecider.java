@@ -24,6 +24,7 @@ import org.elasticsearch.cluster.routing.allocation.RoutingAllocation;
 
 /**
  * Only allow rebalancing when all shards are active within the shard replication group.
+ * 仅当分片复制组中的所有分片均处于活动状态时才允许重新平衡。
  */
 public class RebalanceOnlyWhenActiveAllocationDecider extends AllocationDecider {
 

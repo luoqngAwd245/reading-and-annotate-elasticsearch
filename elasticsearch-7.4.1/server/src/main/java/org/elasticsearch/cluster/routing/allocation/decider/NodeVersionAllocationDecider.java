@@ -32,6 +32,8 @@ import org.elasticsearch.cluster.routing.allocation.RoutingAllocation;
  * a newer version than the node we relocate to this might cause {@link org.apache.lucene.index.IndexFormatTooNewException}
  * on the lowest level since it might have already written segments that use a new postings format or codec that is not
  * available on the target node.
+ * 防止从节点进行重定位或分配的分配决策器可能与版本不兼容。 如果我们从运行比该节点更高版本的节点重定位，则可能会导致{@link org.apache.lucene.index.IndexFormatTooNewException}
+ * 在最低级别上，因为它可能已经编写了使用目标节点上不可用的新发布格式或编解码器的段。
  */
 public class NodeVersionAllocationDecider extends AllocationDecider {
 

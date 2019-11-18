@@ -66,6 +66,8 @@ import static org.elasticsearch.search.suggest.SuggestBuilders.termSuggestion;
 //2、DFS query then fetch
 //
 //比第1种方式多了一个初始化散发(initial scatter)步骤。
+
+// 支持跨集群搜索
 public class RestSearchAction extends BaseRestHandler {
     /**
      * Indicates whether hits.total should be rendered as an integer or an object

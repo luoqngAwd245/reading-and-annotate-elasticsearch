@@ -120,7 +120,7 @@ public class MasterService extends AbstractLifecycleComponent {
         threadPoolExecutor = createThreadPoolExecutor();
         taskBatcher = new Batcher(logger, threadPoolExecutor);
     }
-
+    // 创建单个线程的线程池。因此，集群任务被串行化地执行。支持优先级
     protected PrioritizedEsThreadPoolExecutor createThreadPoolExecutor() {
         return EsExecutors.newSinglePrioritizing(
                 nodeName + "/" + MASTER_UPDATE_THREAD_NAME,
@@ -771,6 +771,7 @@ public class MasterService extends AbstractLifecycleComponent {
     /**
      * Submits a batch of cluster state update tasks; submitted updates are guaranteed to be processed together,
      * potentially with more tasks of the same executor.
+     * 提交一批集群状态更新任务； 保证提交的更新可以一起处理，可能与同一执行程序的更多任务一起处理。
      *
      * @param source   the source of the cluster state update task
      * @param tasks    a map of update tasks and their corresponding listeners

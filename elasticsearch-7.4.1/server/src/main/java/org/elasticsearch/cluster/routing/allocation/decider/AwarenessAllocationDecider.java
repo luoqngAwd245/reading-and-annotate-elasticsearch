@@ -76,6 +76,33 @@ import static java.util.Collections.emptyList;
  * <pre>
  * node.zone: zone1
  * </pre>
+ *
+ * 此{@link AllocationDecider}控制基于以下内容的分片分配 在节点配置中定义的{@code意识}键值对。意识明确控制应根据节点或物理机架位置等属性在何处分配副本。
+ * 意识属性接受任意配置密钥，例如机架数据中心标识符。例如，设置：
+ * <pre>
+ *  cluster.routing.allocation.awareness.attributes：rack_id
+ *   </ pre>
+ *   <p>
+ * 将导致分配分布在不同的机架上，从而
+ * 理想情况下，所有分片的至少一个副本在同一机架上可用。要在此示例中启用分配意识，节点应包含{@code rack_id}键的值，例如：
+ *   <pre>
+ *   node.attr.rack_id：1
+ *   </ pre>
+ *   <p>
+ * 意识还可以用于防止在节点甚至“区域”故障的情况下过度分配。例如，在像Amazon AWS这样的云计算基础架构中，群集可能跨越多个“区域”。可以通过以下方式使用意识将副本分发到各个区域：
+ *  <pre>
+ *  cluster.routing.allocation.awareness.attributes：区域
+ *  </ pre>
+ *  <p>
+ * 并强制分配了解数据所位于的以下区域：
+ *  <pre>
+ *  cluster.routing.allocation.awareness.force.zone.values：zone1，zone2
+ *  </ pre>
+ *  <p>
+ * 与常规意识相反，即使{@code zone2}部分失败或完全不可用，此设置也可以防止在{@code zone1}上的过度分配。属于某个区域/组的节点应使用在节点级别设置上配置的区域ID来启动，例如：
+ * <pre>
+ *  node.zone：zone1
+ *  </ pre>
  */
 public class AwarenessAllocationDecider extends AllocationDecider {
 

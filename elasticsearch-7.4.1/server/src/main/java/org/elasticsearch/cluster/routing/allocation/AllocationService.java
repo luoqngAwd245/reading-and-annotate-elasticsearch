@@ -61,6 +61,8 @@ import static org.elasticsearch.cluster.routing.UnassignedInfo.INDEX_DELAYED_NOD
  * {@link AllocationService} keeps {@link AllocationDeciders} to choose nodes
  * for shard allocation. This class also manages new nodes joining the cluster
  * and rerouting of shards.
+ * 该服务管理群集的节点分配。 因此，{@link AllocationService}保留{@link AllocationDeciders}来选择
+ * 用于分片分配的节点。 此类还管理加入群集和分片重新路由的新节点。
  */
 public class AllocationService {
 
@@ -163,9 +165,10 @@ public class AllocationService {
      * Applies the failed shards. Note, only assigned ShardRouting instances that exist in the routing table should be
      * provided as parameter. Also applies a list of allocation ids to remove from the in-sync set for shard copies for which there
      * are no routing entries in the routing table.
-     *
+     * 应用失败的分片。 注意，仅应将路由表中存在的已分配ShardRouting实例作为参数提供。 还应用分配ID列表，以从路由表中没有路由条目的分片副本的同步集中删除。
      * <p>
      * If the same instance of ClusterState is returned, then no change has been made.</p>
+     * 如果返回相同的ClusterState实例，则未进行任何更改。
      */
     public ClusterState applyFailedShards(final ClusterState clusterState, final List<FailedShard> failedShards,
                                           final List<StaleShard> staleShards) {
@@ -176,6 +179,7 @@ public class AllocationService {
 
         RoutingNodes routingNodes = getMutableRoutingNodes(tmpState);
         // shuffle the unassigned nodes, just so we won't have things like poison failed shards
+        // 随机播放未分配的节点，这样我们就不会遇到像毒药那样的碎片
         routingNodes.unassigned().shuffle();
         long currentNanoTime = currentNanoTime();
         RoutingAllocation allocation = new RoutingAllocation(allocationDeciders, routingNodes, tmpState,
@@ -217,15 +221,18 @@ public class AllocationService {
     /**
      * unassigned an shards that are associated with nodes that are no longer part of the cluster, potentially promoting replicas
      * if needed.
+     * 未分配与不再属于群集的节点关联的分片，并在需要时提升副本。
      */
     public ClusterState disassociateDeadNodes(ClusterState clusterState, boolean reroute, String reason) {
         RoutingNodes routingNodes = getMutableRoutingNodes(clusterState);
         // shuffle the unassigned nodes, just so we won't have things like poison failed shards
+        // 随机播放未分配的节点，这样我们就不会遇到像毒药那样的碎片
         routingNodes.unassigned().shuffle();
         RoutingAllocation allocation = new RoutingAllocation(allocationDeciders, routingNodes, clusterState,
             clusterInfoService.getClusterInfo(), currentNanoTime());
 
         // first, clear from the shards any node id they used to belong to that is now dead
+        // 首先，从分片中清除它们曾经属于的所有节点ID，现在该节点ID已消失
         disassociateDeadNodes(allocation);
 
         if (allocation.routingNodesChanged()) {
@@ -241,6 +248,7 @@ public class AllocationService {
     /**
      * Checks if the are replicas with the auto-expand feature that need to be adapted.
      * Returns an updated cluster state if changes were necessary, or the identical cluster if no changes were required.
+     * 检查是否具有需要自动扩展功能的副本。 如果需要更改，则返回更新的集群状态；如果不需要更改，则返回相同的集群。
      */
     public ClusterState adaptAutoExpandReplicas(ClusterState clusterState) {
         final Map<Integer, List<String>> autoExpandReplicaChanges =
@@ -255,9 +263,11 @@ public class AllocationService {
                 final String[] indices = entry.getValue().toArray(new String[entry.getValue().size()]);
                 // we do *not* update the in sync allocation ids as they will be removed upon the first index
                 // operation which make these copies stale
+                // 我们不更新同步分配ID，因为它们在第一次索引操作时将被删除，这会使这些副本过时
                 routingTableBuilder.updateNumberOfReplicas(numberOfReplicas, indices);
                 metaDataBuilder.updateNumberOfReplicas(numberOfReplicas, indices);
                 // update settings version for each index
+                // 更新每个索引的设置版本
                 for (final String index : indices) {
                     final IndexMetaData indexMetaData = metaDataBuilder.get(index);
                     final IndexMetaData.Builder indexMetaDataBuilder =
@@ -334,11 +344,14 @@ public class AllocationService {
         // we don't shuffle the unassigned shards here, to try and get as close as possible to
         // a consistent result of the effect the commands have on the routing
         // this allows systems to dry run the commands, see the resulting cluster state, and act on it
+        // 我们在此不打乱未分配的分片，以尝试尽可能接近命令对路由的影响的一致结果，这使系统可以空运行命令，查看生成的集群状态并对其执行操作
         RoutingAllocation allocation = new RoutingAllocation(allocationDeciders, routingNodes, clusterState,
             clusterInfoService.getClusterInfo(), currentNanoTime());
         // don't short circuit deciders, we want a full explanation
+        // 不要短路决策者，我们需要完整的解释
         allocation.debugDecision(true);
         // we ignore disable allocation, because commands are explicit
+        // 我们忽略禁用分配，因为命令是显式的
         allocation.ignoreDisable(true);
 
         if (retryFailed) {
@@ -347,23 +360,27 @@ public class AllocationService {
 
         RoutingExplanations explanations = commands.execute(allocation, explain);
         // we revert the ignore disable flag, since when rerouting, we want the original setting to take place
+        // 我们还原了ignore disable标志，因为在重新路由时，我们希望进行原始设置
         allocation.ignoreDisable(false);
         // the assumption is that commands will move / act on shards (or fail through exceptions)
         // so, there will always be shard "movements", so no need to check on reroute
+        // 假设命令将移动/作用于分片（或通过异常失败），因此，总会有分片“运动”，因此无需检查重新路由
         reroute(allocation);
         return new CommandsResult(explanations, buildResultAndLogHealthChange(clusterState, allocation, "reroute commands"));
     }
 
     /**
-     * Reroutes the routing table based on the live nodes.
+     * Reroutes the routing table based on the live nodes. 根据活动节点重新路由路由表。
      * <p>
      * If the same instance of ClusterState is returned, then no change has been made.
+     * 如果返回相同的ClusterState实例，则未进行任何更改。
      */
     public ClusterState reroute(ClusterState clusterState, String reason) {
         ClusterState fixedClusterState = adaptAutoExpandReplicas(clusterState);
 
         RoutingNodes routingNodes = getMutableRoutingNodes(fixedClusterState);
         // shuffle the unassigned nodes, just so we won't have things like poison failed shards
+        // 随机播放未分配的节点，这样我们就不会遇到像毒药那样的碎片
         routingNodes.unassigned().shuffle();
         RoutingAllocation allocation = new RoutingAllocation(allocationDeciders, routingNodes, fixedClusterState,
             clusterInfoService.getClusterInfo(), currentNanoTime());
@@ -397,11 +414,13 @@ public class AllocationService {
             "auto-expand replicas out of sync with number of nodes in the cluster";
 
         // now allocate all the unassigned to available nodes
+        // 现在将所有未分配的分配给可用节点
         if (allocation.routingNodes().unassigned().size() > 0) {
             removeDelayMarkers(allocation);
+            // gateway分配器
             gatewayAllocator.allocateUnassigned(allocation);
         }
-
+        // 分片均衡分配器
         shardsAllocator.allocate(allocation);
         assert RoutingNodes.assertShardStats(allocation.routingNodes());
     }
@@ -443,6 +462,7 @@ public class AllocationService {
     }
 
     private RoutingNodes getMutableRoutingNodes(ClusterState clusterState) {
+        // 这是一项昂贵的操作-只需调用一次
         RoutingNodes routingNodes = new RoutingNodes(clusterState, false); // this is a costly operation - only call this once!
         return routingNodes;
     }

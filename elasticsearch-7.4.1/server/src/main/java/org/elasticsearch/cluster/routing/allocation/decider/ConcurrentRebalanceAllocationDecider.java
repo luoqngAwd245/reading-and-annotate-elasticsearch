@@ -39,6 +39,11 @@ import org.elasticsearch.common.settings.Settings;
  * {@code cluster.routing.allocation.cluster_concurrent_rebalance}. Iff this
  * setting is set to {@code -1} the number of concurrent re-balance operations
  * are unlimited.
+ * 类似于{@link ClusterRebalanceAllocationDecider} {@link AllocationDecider}控制当前进行中的数量重新平衡（重定位）操作并限制节点分配（如果
+ * 达到配置的阈值。 并发重新平衡操作的默认数量设置为{@code 2}
+ * <p>
+ * 重新平衡操作可以使用{@code cluster.routing.allocation.cluster_concurrent_rebalance}通过集群更新API进行实时控制。
+ * 如果将此设置设置为{@code -1}，则并发重新平衡操作的数量是无限的。
  */
 public class ConcurrentRebalanceAllocationDecider extends AllocationDecider {
 
@@ -66,7 +71,7 @@ public class ConcurrentRebalanceAllocationDecider extends AllocationDecider {
     public Decision canRebalance(ShardRouting shardRouting, RoutingAllocation allocation) {
         return canRebalance(allocation);
     }
-    
+
     @Override
     public Decision canRebalance(RoutingAllocation allocation) {
         if (clusterConcurrentRebalance == -1) {

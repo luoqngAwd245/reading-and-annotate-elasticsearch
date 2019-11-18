@@ -1,0 +1,16 @@
+分片分配由主节点完成。包含两个基础组件：allocators 和 deciders。
+
+**************************分片的触发时机***********************************
+. index 增删
+. node 增删
+. 手工reroute
+. replica 数量改变
+. 集群重启
+
+**************************allocators类型****************************
+                                    - primaryShardAllocator
+                                   |
+                - gatewayAllocator-|   
+               |                   - replicaShardAllocator 
+allocators-----|
+                - shardsAllocator -- BalancedShardsAllocator 

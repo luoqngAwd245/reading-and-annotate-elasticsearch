@@ -42,6 +42,15 @@ import org.elasticsearch.common.settings.Settings;
  * {@code host}. Allocations of multiple copies of the same shard on the same
  * {@code node} are not allowed independently of this setting.
  * </p>
+ *
+ * 一个分配决策器，可防止在同一{@code节点}上分配同一分片的多个实例。
+ *
+ * {@link #CLUSTER_ROUTING_ALLOCATION_SAME_HOST_SETTING}设置允许根据主机名和主机地址执行检查，以防止在单个{@code host}上分配同一分片的多个实例。
+ * 默认为“ false”，表示默认情况下不执行任何检查。
+ *
+ * <p>
+ * 注意：仅当在同一{@code host}上启动多个节点时，此设置才适用。 与该设置无关，不允许在同一{@code节点}上分配同一分片的多个副本。
+ * </ p>
  */
 public class SameShardAllocationDecider extends AllocationDecider {
 
